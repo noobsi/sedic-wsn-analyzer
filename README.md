@@ -3,7 +3,7 @@
 
  
 * Using Castalia 3.3 for wireless sensor network simulator.
-  * `Castalia/Castalia` directory. 
+  * `Castalia/` directory. 
   * Read `README.md` in this directory for installing, running and more details
 * Using HTML5 for creating, editing and visualizing sensor networks
   * `visualizer` directory. 
