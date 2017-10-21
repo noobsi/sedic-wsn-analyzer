@@ -1,28 +1,46 @@
-# Brunch + Babel/ES6
 
-This is a modern JS skeleton for [Brunch](http://brunch.io).
-
-## Installation
-
-Clone this repo manually or use `brunch new dir -s es6`
-
-## Getting started
+## WSN visualizer tool
 
 * Install (if you don't have them):
-    * [Node.js](http://nodejs.org): `brew install node` on OS X
+    * [Node.js](http://nodejs.org) Make sure nodejs and npm is installed
     * [Brunch](http://brunch.io): `npm install -g brunch`
     * Brunch plugins and app dependencies: `npm install`
 * Run:
     * `npm start` — watches the project with continuous rebuild. This will also launch HTTP server with [pushState](https://developer.mozilla.org/en-US/docs/Web/Guide/API/DOM/Manipulating_the_browser_history).
     * `npm run build` — builds minified project for production
-* Learn:
-    * `public/` dir is fully auto-generated and served by HTTP server.  Write your code in `app/` dir.
-    * Place static files you want to be copied from `app/assets/` to `public/`.
-    * [Brunch site](http://brunch.io), [Getting started guide](https://github.com/brunch/brunch-guide#readme)
-
-## ES-next
-
-To use proposed JS features not included into ES6, do this:
-
-* `npm install --save-dev babel-preset-stage-0`
-* in `brunch-config.js`, add the preset: `presets: ['latest', 'stage-0']`
+    * Go to [localhost](http://localhost:3333/) for visualizer web tool
+    
+* Info
+    * This project use [sigma.js](http://sigmajs.org/) with various plugins from
+    [Linkurious](https://github.com/Linkurious/linkurious.js) to generate and manipulate sensor graphs
+    * v0.0.1 Client requests for routing result between two chosen nodes by sending a json with 
+     following format: 
+     ```
+      {
+        "nodes": [
+          {
+            "id": "1", "x": 0, "y": 0
+          },
+          {
+            "id": "2", "x": 0, "y": 40
+          },
+          {
+            "id": "3", "x": 40, "y": 40
+          },
+          {
+            "id": "4", "x": 40, "y": 80
+          }	
+        ],
+        "width": 80,
+        "height": 80,
+        "source": "1",
+        "destination": "4"
+      }
+     ```
+     The result has the format: 
+     ```
+     {
+         "path": ["1", "2", "3", "4"]
+     }
+     ```
+     
