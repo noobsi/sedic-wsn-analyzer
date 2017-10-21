@@ -1,0 +1,26 @@
+/* CSS */
+#content {
+  height: 100%;
+}
+#graph-container {
+  min-height: 720px;
+}
+#panel {
+  padding: 15px;
+  background-color: #563d7c;
+  color: #cdbfe3;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+#generate-btn {
+  margin-top: 5px;
+}
+#option-panel {
+  top: 10px;
+  left: 10px;
+  z-index: 1;
+  position: absolute;
+  width: 140px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  background: rgb(249, 247, 237);
+  padding: 10px;
+}

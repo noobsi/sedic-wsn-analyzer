@@ -5,3 +5,5 @@ Castalia/Castalia/bin/**
 Castalia/Castalia/CastaliaBin
 Castalia/Castalia/Simulations/*/*.txt
 Castalia/Castalia/Simulations/*/*/*.txt
+Castalia/Castalia/Simulations/server/archive/*
+visualizer/public
