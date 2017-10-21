@@ -1,5 +1,7 @@
 node_modules
-Castalia/Castalia/out/*
-Castalia/Castalia/bin/*
+Castalia/Castalia/out/**
+Castalia/Castalia/bin/**
 .idea
 Castalia/Castalia/CastaliaBin
+Castalia/Castalia/Simulations/*/*.txt
+Castalia/Castalia/Simulations/*/*/*.txt
