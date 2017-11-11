@@ -37,13 +37,13 @@
 
 using namespace std;
 
-struct GPSR_neighborRecord {
+struct NeighborRecord {
   int id;      // the node's ID
   Point location;
   double ts;   //the last time stamp of the hello msg from it
   int timesRx;   
 
-  GPSR_neighborRecord() {
+  NeighborRecord() {
     id = 0;
     ts = 0.0;
     timesRx = 0;
@@ -81,7 +81,7 @@ class GpsrRouting: public VirtualRouting {
     bool isSink;		//is a .ned file parameter of the Application module
     sink mySink; 
     int seqHello;
-    vector<GPSR_neighborRecord> neighborTable;
+    vector<NeighborRecord> neighborTable;
 
   protected:
 
@@ -101,6 +101,9 @@ class GpsrRouting: public VirtualRouting {
     int getNextHop(GpsrPacket*);
     int getNextHopGreedy(GpsrPacket*);              // Greedy forwarding mode
     int getNextHopPerimeter(GpsrPacket*);          // Perimeter mode
+    int getNextHopPerimeterInit(GpsrPacket*);          // Perimeter first time in
+    int rightHandForward(GpsrPacket*);
+    vector<NeighborRecord> getPlanarNeighbors();
 };
 
 #endif				//GPSRROUTINGMODULE

@@ -95,6 +95,7 @@ void GpsrRouting::fromApplicationLayer(cPacket * pkt, const char *destination){
   }
   else {
     dataPacket->setDestLocation(mySink.location);
+    dataPacket->setPreviousLocation(Point()); // previous is unspecified
 
     int nextHop = getNextHop(dataPacket);
     if (nextHop != -1) {
@@ -229,6 +230,7 @@ void GpsrRouting::processDataPacketFromMacLayer(GpsrPacket* pkt){
   GpsrPacket *netPacket = pkt->dup();
   int nextHop = getNextHop(netPacket);
   if (nextHop != -1) {
+    netPacket->setPreviousLocation(selfLocation);
     toMacLayer(netPacket, nextHop);
     collectOutput("GPSR Packets received", "DATA from Application (unicast,greedy)");
     collectOutput("GPSR Packets sent", "DATA (unicast,greedy)");
@@ -256,7 +258,7 @@ void GpsrRouting::updateNeighborTable(int nodeID, int theSN, Point nodeLocation)
 
   // it's a new neighbor
   if (pos == -1) {
-    GPSR_neighborRecord newRec;
+    NeighborRecord newRec;
     newRec.id = nodeID;
 //    newRec.x = x_node;
 //    newRec.y = y_node;
@@ -311,8 +313,48 @@ int GpsrRouting::getNextHopGreedy(GpsrPacket* dataPacket){
     }
   }
 
+  if (nextHop == -1) {
+    return getNextHopPerimeterInit(dataPacket);
+  }
+
   return nextHop;
 }
+
+int GpsrRouting::getNextHopPerimeterInit(GpsrPacket* dataPacket) {
+  dataPacket->setRoutingMode(GPSR_PERIMETER_ROUTING);
+  dataPacket->setPerimeterRoutingStartPosition(selfLocation);
+  dataPacket->setPerimeterRoutingFacePosition(selfLocation);
+
+  int nextHop = rightHandForward(dataPacket);
+}
+
+int GpsrRouting::rightHandForward(GpsrPacket* dataPacket) {
+  vector<NeighborRecord> planarNeighbors = getPlanarNeighbors();
+}
+
+vector<NeighborRecord> GpsrRouting::getPlanarNeighbors() {
+  vector<NeighborRecord> planarNeighbors;
+
+  for (auto &v: neighborTable) {
+
+    bool ok = true;
+    for (auto &w: neighborTable) {
+      if (v.id == w.id) continue;
+      double uv = G::distance(selfLocation, v.location);
+      double uw = G::distance(selfLocation, w.location);
+      double vw = G::distance(v.location, w.location);
+
+      if (uv > max(uw, vw)) {
+        ok = false;
+      }
+    }
+
+    if (ok) {
+      planarNeighbors.push_back(v);
+    }
+  }
+};
+
 
 //================================================================
 //    getNextHopPerimeter

@@ -100,9 +100,10 @@ void GpsrPacket::copy(const GpsrPacket& other)
 {
     this->GpsrPacketKind_var = other.GpsrPacketKind_var;
     this->routingMode_var = other.routingMode_var;
+    this->previousLocation_var = other.previousLocation_var;
     this->destLocation_var = other.destLocation_var;
     this->perimeterRoutingStartPosition_var = other.perimeterRoutingStartPosition_var;
-    this->perimeterRoutingForwardPosition_var = other.perimeterRoutingForwardPosition_var;
+    this->perimeterRoutingFacePosition_var = other.perimeterRoutingFacePosition_var;
     this->currentFaceFirstSender_var = other.currentFaceFirstSender_var;
     this->currentFaceFirstReceiver_var = other.currentFaceFirstReceiver_var;
     this->helloLocation_var = other.helloLocation_var;
@@ -113,9 +114,10 @@ void GpsrPacket::parsimPack(cCommBuffer *b)
     ::RoutingPacket::parsimPack(b);
     doPacking(b,this->GpsrPacketKind_var);
     doPacking(b,this->routingMode_var);
+    doPacking(b,this->previousLocation_var);
     doPacking(b,this->destLocation_var);
     doPacking(b,this->perimeterRoutingStartPosition_var);
-    doPacking(b,this->perimeterRoutingForwardPosition_var);
+    doPacking(b,this->perimeterRoutingFacePosition_var);
     doPacking(b,this->currentFaceFirstSender_var);
     doPacking(b,this->currentFaceFirstReceiver_var);
     doPacking(b,this->helloLocation_var);
@@ -126,9 +128,10 @@ void GpsrPacket::parsimUnpack(cCommBuffer *b)
     ::RoutingPacket::parsimUnpack(b);
     doUnpacking(b,this->GpsrPacketKind_var);
     doUnpacking(b,this->routingMode_var);
+    doUnpacking(b,this->previousLocation_var);
     doUnpacking(b,this->destLocation_var);
     doUnpacking(b,this->perimeterRoutingStartPosition_var);
-    doUnpacking(b,this->perimeterRoutingForwardPosition_var);
+    doUnpacking(b,this->perimeterRoutingFacePosition_var);
     doUnpacking(b,this->currentFaceFirstSender_var);
     doUnpacking(b,this->currentFaceFirstReceiver_var);
     doUnpacking(b,this->helloLocation_var);
@@ -154,6 +157,16 @@ void GpsrPacket::setRoutingMode(int routingMode)
     this->routingMode_var = routingMode;
 }
 
+Point& GpsrPacket::getPreviousLocation()
+{
+    return previousLocation_var;
+}
+
+void GpsrPacket::setPreviousLocation(const Point& previousLocation)
+{
+    this->previousLocation_var = previousLocation;
+}
+
 Point& GpsrPacket::getDestLocation()
 {
     return destLocation_var;
@@ -174,14 +187,14 @@ void GpsrPacket::setPerimeterRoutingStartPosition(const Point& perimeterRoutingS
     this->perimeterRoutingStartPosition_var = perimeterRoutingStartPosition;
 }
 
-Point& GpsrPacket::getPerimeterRoutingForwardPosition()
+Point& GpsrPacket::getPerimeterRoutingFacePosition()
 {
-    return perimeterRoutingForwardPosition_var;
+    return perimeterRoutingFacePosition_var;
 }
 
-void GpsrPacket::setPerimeterRoutingForwardPosition(const Point& perimeterRoutingForwardPosition)
+void GpsrPacket::setPerimeterRoutingFacePosition(const Point& perimeterRoutingFacePosition)
 {
-    this->perimeterRoutingForwardPosition_var = perimeterRoutingForwardPosition;
+    this->perimeterRoutingFacePosition_var = perimeterRoutingFacePosition;
 }
 
 int GpsrPacket::getCurrentFaceFirstSender() const
@@ -261,7 +274,7 @@ const char *GpsrPacketDescriptor::getProperty(const char *propertyname) const
 int GpsrPacketDescriptor::getFieldCount(void *object) const
 {
     cClassDescriptor *basedesc = getBaseClassDescriptor();
-    return basedesc ? 8+basedesc->getFieldCount(object) : 8;
+    return basedesc ? 9+basedesc->getFieldCount(object) : 9;
 }
 
 unsigned int GpsrPacketDescriptor::getFieldTypeFlags(void *object, int field) const
@@ -278,11 +291,12 @@ unsigned int GpsrPacketDescriptor::getFieldTypeFlags(void *object, int field) co
         FD_ISCOMPOUND,
         FD_ISCOMPOUND,
         FD_ISCOMPOUND,
+        FD_ISCOMPOUND,
         FD_ISEDITABLE,
         FD_ISEDITABLE,
         FD_ISCOMPOUND,
     };
-    return (field>=0 && field<8) ? fieldTypeFlags[field] : 0;
+    return (field>=0 && field<9) ? fieldTypeFlags[field] : 0;
 }
 
 const char *GpsrPacketDescriptor::getFieldName(void *object, int field) const
@@ -296,14 +310,15 @@ const char *GpsrPacketDescriptor::getFieldName(void *object, int field) const
     static const char *fieldNames[] = {
         "GpsrPacketKind",
         "routingMode",
+        "previousLocation",
         "destLocation",
         "perimeterRoutingStartPosition",
-        "perimeterRoutingForwardPosition",
+        "perimeterRoutingFacePosition",
         "currentFaceFirstSender",
         "currentFaceFirstReceiver",
         "helloLocation",
     };
-    return (field>=0 && field<8) ? fieldNames[field] : NULL;
+    return (field>=0 && field<9) ? fieldNames[field] : NULL;
 }
 
 int GpsrPacketDescriptor::findField(void *object, const char *fieldName) const
@@ -312,12 +327,13 @@ int GpsrPacketDescriptor::findField(void *object, const char *fieldName) const
     int base = basedesc ? basedesc->getFieldCount(object) : 0;
     if (fieldName[0]=='G' && strcmp(fieldName, "GpsrPacketKind")==0) return base+0;
     if (fieldName[0]=='r' && strcmp(fieldName, "routingMode")==0) return base+1;
-    if (fieldName[0]=='d' && strcmp(fieldName, "destLocation")==0) return base+2;
-    if (fieldName[0]=='p' && strcmp(fieldName, "perimeterRoutingStartPosition")==0) return base+3;
-    if (fieldName[0]=='p' && strcmp(fieldName, "perimeterRoutingForwardPosition")==0) return base+4;
-    if (fieldName[0]=='c' && strcmp(fieldName, "currentFaceFirstSender")==0) return base+5;
-    if (fieldName[0]=='c' && strcmp(fieldName, "currentFaceFirstReceiver")==0) return base+6;
-    if (fieldName[0]=='h' && strcmp(fieldName, "helloLocation")==0) return base+7;
+    if (fieldName[0]=='p' && strcmp(fieldName, "previousLocation")==0) return base+2;
+    if (fieldName[0]=='d' && strcmp(fieldName, "destLocation")==0) return base+3;
+    if (fieldName[0]=='p' && strcmp(fieldName, "perimeterRoutingStartPosition")==0) return base+4;
+    if (fieldName[0]=='p' && strcmp(fieldName, "perimeterRoutingFacePosition")==0) return base+5;
+    if (fieldName[0]=='c' && strcmp(fieldName, "currentFaceFirstSender")==0) return base+6;
+    if (fieldName[0]=='c' && strcmp(fieldName, "currentFaceFirstReceiver")==0) return base+7;
+    if (fieldName[0]=='h' && strcmp(fieldName, "helloLocation")==0) return base+8;
     return basedesc ? basedesc->findField(object, fieldName) : -1;
 }
 
@@ -335,11 +351,12 @@ const char *GpsrPacketDescriptor::getFieldTypeString(void *object, int field) co
         "Point",
         "Point",
         "Point",
+        "Point",
         "int",
         "int",
         "Point",
     };
-    return (field>=0 && field<8) ? fieldTypeStrings[field] : NULL;
+    return (field>=0 && field<9) ? fieldTypeStrings[field] : NULL;
 }
 
 const char *GpsrPacketDescriptor::getFieldProperty(void *object, int field, const char *propertyname) const
@@ -387,12 +404,13 @@ std::string GpsrPacketDescriptor::getFieldAsString(void *object, int field, int 
     switch (field) {
         case 0: return long2string(pp->getGpsrPacketKind());
         case 1: return long2string(pp->getRoutingMode());
-        case 2: {std::stringstream out; out << pp->getDestLocation(); return out.str();}
-        case 3: {std::stringstream out; out << pp->getPerimeterRoutingStartPosition(); return out.str();}
-        case 4: {std::stringstream out; out << pp->getPerimeterRoutingForwardPosition(); return out.str();}
-        case 5: return long2string(pp->getCurrentFaceFirstSender());
-        case 6: return long2string(pp->getCurrentFaceFirstReceiver());
-        case 7: {std::stringstream out; out << pp->getHelloLocation(); return out.str();}
+        case 2: {std::stringstream out; out << pp->getPreviousLocation(); return out.str();}
+        case 3: {std::stringstream out; out << pp->getDestLocation(); return out.str();}
+        case 4: {std::stringstream out; out << pp->getPerimeterRoutingStartPosition(); return out.str();}
+        case 5: {std::stringstream out; out << pp->getPerimeterRoutingFacePosition(); return out.str();}
+        case 6: return long2string(pp->getCurrentFaceFirstSender());
+        case 7: return long2string(pp->getCurrentFaceFirstReceiver());
+        case 8: {std::stringstream out; out << pp->getHelloLocation(); return out.str();}
         default: return "";
     }
 }
@@ -409,8 +427,8 @@ bool GpsrPacketDescriptor::setFieldAsString(void *object, int field, int i, cons
     switch (field) {
         case 0: pp->setGpsrPacketKind(string2long(value)); return true;
         case 1: pp->setRoutingMode(string2long(value)); return true;
-        case 5: pp->setCurrentFaceFirstSender(string2long(value)); return true;
-        case 6: pp->setCurrentFaceFirstReceiver(string2long(value)); return true;
+        case 6: pp->setCurrentFaceFirstSender(string2long(value)); return true;
+        case 7: pp->setCurrentFaceFirstReceiver(string2long(value)); return true;
         default: return false;
     }
 }
@@ -427,7 +445,8 @@ const char *GpsrPacketDescriptor::getFieldStructName(void *object, int field) co
         case 2: return opp_typename(typeid(Point));
         case 3: return opp_typename(typeid(Point));
         case 4: return opp_typename(typeid(Point));
-        case 7: return opp_typename(typeid(Point));
+        case 5: return opp_typename(typeid(Point));
+        case 8: return opp_typename(typeid(Point));
         default: return NULL;
     };
 }
@@ -442,10 +461,11 @@ void *GpsrPacketDescriptor::getFieldStructPointer(void *object, int field, int i
     }
     GpsrPacket *pp = (GpsrPacket *)object; (void)pp;
     switch (field) {
-        case 2: return (void *)(&pp->getDestLocation()); break;
-        case 3: return (void *)(&pp->getPerimeterRoutingStartPosition()); break;
-        case 4: return (void *)(&pp->getPerimeterRoutingForwardPosition()); break;
-        case 7: return (void *)(&pp->getHelloLocation()); break;
+        case 2: return (void *)(&pp->getPreviousLocation()); break;
+        case 3: return (void *)(&pp->getDestLocation()); break;
+        case 4: return (void *)(&pp->getPerimeterRoutingStartPosition()); break;
+        case 5: return (void *)(&pp->getPerimeterRoutingFacePosition()); break;
+        case 8: return (void *)(&pp->getHelloLocation()); break;
         default: return NULL;
     }
 }

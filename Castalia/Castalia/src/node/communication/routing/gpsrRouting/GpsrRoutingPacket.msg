@@ -23,9 +23,10 @@ enum GpsrPacketDef {
 packet GpsrPacket extends RoutingPacket {
     int GpsrPacketKind enum (GpsrPacketDef);
     int routingMode enum (GpsrForwardingMode);
+    Point previousLocation; // to determine last edge
     Point destLocation; // Ld
     Point perimeterRoutingStartPosition; // Lp
-    Point perimeterRoutingForwardPosition; // Lf
+    Point perimeterRoutingFacePosition; // Lf
     int currentFaceFirstSender; // e0
     int currentFaceFirstReceiver; // e0
 

@@ -21,8 +21,8 @@ class G;
 
 struct Point {
   Point() {
-    x_ = NaN;
-    x_ = NaN;
+    x_ = -1;
+    y_ = -1;
   }
 
   Point(double x, double y) {
@@ -35,7 +35,7 @@ struct Point {
   }
 
   bool isUnspecified() {
-    return x_ == NaN;
+    return x_ == -1;
   }
 
   inline double y() const {
@@ -65,6 +65,15 @@ class G {
   public:
     static double distance(Point p1, Point p2);
     static double distance(double x1, double y1, double x2, double y2);
+    static double norm(double rad) {
+    	while (rad < 0) {
+    		rad = rad + (2 * M_PI);
+    	}
+    	while (rad > (2 * M_PI)) {
+    		rad = rad - (2 * M_PI);
+    	}
+    	return rad;
+    }
 };
 
 
