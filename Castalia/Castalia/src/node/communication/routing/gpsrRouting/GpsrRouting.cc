@@ -13,7 +13,6 @@
 /*           Congduc Pham <congduc.pham@univ-pau.fr>     */
 /*********************************************************/
 #include "GpsrRouting.h"
-#include "GeoMathHelper.h"
 
 
 Define_Module(GpsrRouting);
@@ -100,6 +99,7 @@ void GpsrRouting::fromApplicationLayer(cPacket * pkt, const char *destination){
   else {
     dataPacket->setDestX(mySink.x);
     dataPacket->setDestY(mySink.y);
+    dataPacket->setDestLocation(Point(mySink.x, mySink.y));
 
     int nextHop = getNextHop(dataPacket);
     if (nextHop != -1) {
@@ -141,7 +141,8 @@ void GpsrRouting::fromMacLayer(cPacket * pkt, int macAddress, double rssi, doubl
       {
         collectOutput("GPSR Packets received", "HELLO");
 
-        updateNeighborTable(atoi(netPacket->getSource()), seqHello, netPacket->getHelloX(),netPacket->getHelloY());
+        Point helloLocation = netPacket->getHelloLocation();
+        updateNeighborTable(atoi(netPacket->getSource()), seqHello, helloLocation.x(), helloLocation.y());
         break;
       }
 
@@ -188,8 +189,7 @@ void GpsrRouting::sendHelloMessage(){
 
   GpsrPacket *helloMsg = new GpsrPacket("GPSR hello message packet", NETWORK_LAYER_PACKET);
   helloMsg->setGpsrPacketKind(GPSR_HELLO_MSG_PACKET);
-  helloMsg->setHelloX(selfX);
-  helloMsg->setHelloY(selfY);
+  helloMsg->setHelloLocation(selfLocation);
   helloMsg->setSource(SELF_NETWORK_ADDRESS);
   helloMsg->setDestination(BROADCAST_NETWORK_ADDRESS);
   toMacLayer(helloMsg, BROADCAST_MAC_ADDRESS);
@@ -301,13 +301,12 @@ void GpsrRouting::updateNeighborTable(int nodeID, int theSN, double x_node, doub
 //================================================================
 int GpsrRouting::getNextHopGreedy(GpsrPacket* dataPacket){
 
-
-
   int nextHop = -1; double dist = 0;
   int tblSize = (int)neighborTable.size();
   double destX = dataPacket->getDestX();
   double destY = dataPacket->getDestY();
-  double minDist = G::distance(selfX, selfY, destX, destY);
+  Point destLocation = dataPacket->getDestLocation();
+  double minDist = G::distance(selfLocation, destLocation);
 
   for (int i = 0; i < tblSize; i++) {
     dist = G::distance(neighborTable[i].x, neighborTable[i].y, destX, destY);
@@ -339,8 +338,9 @@ void GpsrRouting::handleNetworkControlCommand(cMessage *msg) {
     case SET_GPSR_NODE_POS: 
       {
 
-        selfX = cmd->getDouble1();
-        selfY = cmd->getDouble2();
+        double selfX = cmd->getDouble1();
+        double selfY = cmd->getDouble2();
+        selfLocation = Point(selfX, selfY);
         isCoordinateSet = true;
 
         // normally, this is the first HELLO message

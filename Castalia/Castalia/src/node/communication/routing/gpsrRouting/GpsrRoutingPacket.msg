@@ -4,6 +4,8 @@ cplusplus {{
 #include "GeoMathHelper.h"
 }}
 
+class noncobject Point;
+
 class RoutingPacket;
 
 enum GpsrForwardingMode {
@@ -22,15 +24,15 @@ packet GpsrPacket extends RoutingPacket {
     int GpsrPacketKind enum (GpsrPacketDef);
     int routingMode enum (GpsrForwardingMode);
 
-
-
 	  double destX;	// for the sink when it is a data message
 	  double destY;
 
+    Point destLocation;
 
     // for hello message
     double helloX;
     double helloY;
+    Point helloLocation;
 }
 
 

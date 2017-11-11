@@ -21,7 +21,7 @@
 // }}
 
 /**
- * Enum generated from <tt>src/node/communication/routing/gpsrRouting/GpsrRoutingPacket.msg:9</tt> by nedtool.
+ * Enum generated from <tt>src/node/communication/routing/gpsrRouting/GpsrRoutingPacket.msg:11</tt> by nedtool.
  * <pre>
  * enum GpsrForwardingMode
  * {
@@ -37,7 +37,7 @@ enum GpsrForwardingMode {
 };
 
 /**
- * Enum generated from <tt>src/node/communication/routing/gpsrRouting/GpsrRoutingPacket.msg:14</tt> by nedtool.
+ * Enum generated from <tt>src/node/communication/routing/gpsrRouting/GpsrRoutingPacket.msg:16</tt> by nedtool.
  * <pre>
  * enum GpsrPacketDef
  * {
@@ -57,22 +57,22 @@ enum GpsrPacketDef {
 };
 
 /**
- * Class generated from <tt>src/node/communication/routing/gpsrRouting/GpsrRoutingPacket.msg:21</tt> by nedtool.
+ * Class generated from <tt>src/node/communication/routing/gpsrRouting/GpsrRoutingPacket.msg:23</tt> by nedtool.
  * <pre>
  * packet GpsrPacket extends RoutingPacket
  * {
  *     int GpsrPacketKind @enum(GpsrPacketDef);
  *     int routingMode @enum(GpsrForwardingMode);
  * 
- * 
- * 
  *     double destX;	// for the sink when it is a data message
  *     double destY;
  * 
+ *     Point destLocation;
  * 
  *     // for hello message
  *     double helloX;
  *     double helloY;
+ *     Point helloLocation;
  * }
  * </pre>
  */
@@ -83,8 +83,10 @@ class GpsrPacket : public ::RoutingPacket
     int routingMode_var;
     double destX_var;
     double destY_var;
+    Point destLocation_var;
     double helloX_var;
     double helloY_var;
+    Point helloLocation_var;
 
   private:
     void copy(const GpsrPacket& other);
@@ -111,10 +113,16 @@ class GpsrPacket : public ::RoutingPacket
     virtual void setDestX(double destX);
     virtual double getDestY() const;
     virtual void setDestY(double destY);
+    virtual Point& getDestLocation();
+    virtual const Point& getDestLocation() const {return const_cast<GpsrPacket*>(this)->getDestLocation();}
+    virtual void setDestLocation(const Point& destLocation);
     virtual double getHelloX() const;
     virtual void setHelloX(double helloX);
     virtual double getHelloY() const;
     virtual void setHelloY(double helloY);
+    virtual Point& getHelloLocation();
+    virtual const Point& getHelloLocation() const {return const_cast<GpsrPacket*>(this)->getHelloLocation();}
+    virtual void setHelloLocation(const Point& helloLocation);
 };
 
 inline void doPacking(cCommBuffer *b, GpsrPacket& obj) {obj.parsimPack(b);}

@@ -23,6 +23,7 @@
 #include "VirtualRouting.h"
 #include "GpsrRoutingControl_m.h"
 #include "GpsrRoutingPacket_m.h"
+#include "GeoMathHelper.h"
 
 
 #define DEFAULT_GPSR_TIMEOUT   200.0   
@@ -40,6 +41,7 @@ struct GPSR_neighborRecord {
   int id;      // the node's ID
   double x;       // the node's coordinates : the geographic information
   double y;
+  Point location;
   double ts;   //the last time stamp of the hello msg from it
   int timesRx;   
 
@@ -57,6 +59,7 @@ struct sink {
   int id;          // the Sink's ID
   double x;       // the Sink's coordonates : the geographic information
   double y;
+  Point location;
 };
 
 
@@ -77,8 +80,7 @@ class GpsrRouting: public VirtualRouting {
 
     // GpsrRouting-related member variables
     int self;         // the node's ID
-    double selfX; // store the node's position in meters
-    double selfY;
+    Point selfLocation;
     bool isCoordinateSet; // to know whether the node's position has been set or not
     int totalSNnodes;
     int packetsPerNode;

@@ -104,8 +104,10 @@ void GpsrPacket::copy(const GpsrPacket& other)
     this->routingMode_var = other.routingMode_var;
     this->destX_var = other.destX_var;
     this->destY_var = other.destY_var;
+    this->destLocation_var = other.destLocation_var;
     this->helloX_var = other.helloX_var;
     this->helloY_var = other.helloY_var;
+    this->helloLocation_var = other.helloLocation_var;
 }
 
 void GpsrPacket::parsimPack(cCommBuffer *b)
@@ -115,8 +117,10 @@ void GpsrPacket::parsimPack(cCommBuffer *b)
     doPacking(b,this->routingMode_var);
     doPacking(b,this->destX_var);
     doPacking(b,this->destY_var);
+    doPacking(b,this->destLocation_var);
     doPacking(b,this->helloX_var);
     doPacking(b,this->helloY_var);
+    doPacking(b,this->helloLocation_var);
 }
 
 void GpsrPacket::parsimUnpack(cCommBuffer *b)
@@ -126,8 +130,10 @@ void GpsrPacket::parsimUnpack(cCommBuffer *b)
     doUnpacking(b,this->routingMode_var);
     doUnpacking(b,this->destX_var);
     doUnpacking(b,this->destY_var);
+    doUnpacking(b,this->destLocation_var);
     doUnpacking(b,this->helloX_var);
     doUnpacking(b,this->helloY_var);
+    doUnpacking(b,this->helloLocation_var);
 }
 
 int GpsrPacket::getGpsrPacketKind() const
@@ -170,6 +176,16 @@ void GpsrPacket::setDestY(double destY)
     this->destY_var = destY;
 }
 
+Point& GpsrPacket::getDestLocation()
+{
+    return destLocation_var;
+}
+
+void GpsrPacket::setDestLocation(const Point& destLocation)
+{
+    this->destLocation_var = destLocation;
+}
+
 double GpsrPacket::getHelloX() const
 {
     return helloX_var;
@@ -188,6 +204,16 @@ double GpsrPacket::getHelloY() const
 void GpsrPacket::setHelloY(double helloY)
 {
     this->helloY_var = helloY;
+}
+
+Point& GpsrPacket::getHelloLocation()
+{
+    return helloLocation_var;
+}
+
+void GpsrPacket::setHelloLocation(const Point& helloLocation)
+{
+    this->helloLocation_var = helloLocation;
 }
 
 class GpsrPacketDescriptor : public cClassDescriptor
@@ -237,7 +263,7 @@ const char *GpsrPacketDescriptor::getProperty(const char *propertyname) const
 int GpsrPacketDescriptor::getFieldCount(void *object) const
 {
     cClassDescriptor *basedesc = getBaseClassDescriptor();
-    return basedesc ? 6+basedesc->getFieldCount(object) : 6;
+    return basedesc ? 8+basedesc->getFieldCount(object) : 8;
 }
 
 unsigned int GpsrPacketDescriptor::getFieldTypeFlags(void *object, int field) const
@@ -253,10 +279,12 @@ unsigned int GpsrPacketDescriptor::getFieldTypeFlags(void *object, int field) co
         FD_ISEDITABLE,
         FD_ISEDITABLE,
         FD_ISEDITABLE,
+        FD_ISCOMPOUND,
         FD_ISEDITABLE,
         FD_ISEDITABLE,
+        FD_ISCOMPOUND,
     };
-    return (field>=0 && field<6) ? fieldTypeFlags[field] : 0;
+    return (field>=0 && field<8) ? fieldTypeFlags[field] : 0;
 }
 
 const char *GpsrPacketDescriptor::getFieldName(void *object, int field) const
@@ -272,10 +300,12 @@ const char *GpsrPacketDescriptor::getFieldName(void *object, int field) const
         "routingMode",
         "destX",
         "destY",
+        "destLocation",
         "helloX",
         "helloY",
+        "helloLocation",
     };
-    return (field>=0 && field<6) ? fieldNames[field] : NULL;
+    return (field>=0 && field<8) ? fieldNames[field] : NULL;
 }
 
 int GpsrPacketDescriptor::findField(void *object, const char *fieldName) const
@@ -286,8 +316,10 @@ int GpsrPacketDescriptor::findField(void *object, const char *fieldName) const
     if (fieldName[0]=='r' && strcmp(fieldName, "routingMode")==0) return base+1;
     if (fieldName[0]=='d' && strcmp(fieldName, "destX")==0) return base+2;
     if (fieldName[0]=='d' && strcmp(fieldName, "destY")==0) return base+3;
-    if (fieldName[0]=='h' && strcmp(fieldName, "helloX")==0) return base+4;
-    if (fieldName[0]=='h' && strcmp(fieldName, "helloY")==0) return base+5;
+    if (fieldName[0]=='d' && strcmp(fieldName, "destLocation")==0) return base+4;
+    if (fieldName[0]=='h' && strcmp(fieldName, "helloX")==0) return base+5;
+    if (fieldName[0]=='h' && strcmp(fieldName, "helloY")==0) return base+6;
+    if (fieldName[0]=='h' && strcmp(fieldName, "helloLocation")==0) return base+7;
     return basedesc ? basedesc->findField(object, fieldName) : -1;
 }
 
@@ -304,10 +336,12 @@ const char *GpsrPacketDescriptor::getFieldTypeString(void *object, int field) co
         "int",
         "double",
         "double",
+        "Point",
         "double",
         "double",
+        "Point",
     };
-    return (field>=0 && field<6) ? fieldTypeStrings[field] : NULL;
+    return (field>=0 && field<8) ? fieldTypeStrings[field] : NULL;
 }
 
 const char *GpsrPacketDescriptor::getFieldProperty(void *object, int field, const char *propertyname) const
@@ -357,8 +391,10 @@ std::string GpsrPacketDescriptor::getFieldAsString(void *object, int field, int 
         case 1: return long2string(pp->getRoutingMode());
         case 2: return double2string(pp->getDestX());
         case 3: return double2string(pp->getDestY());
-        case 4: return double2string(pp->getHelloX());
-        case 5: return double2string(pp->getHelloY());
+        case 4: {std::stringstream out; out << pp->getDestLocation(); return out.str();}
+        case 5: return double2string(pp->getHelloX());
+        case 6: return double2string(pp->getHelloY());
+        case 7: {std::stringstream out; out << pp->getHelloLocation(); return out.str();}
         default: return "";
     }
 }
@@ -377,8 +413,8 @@ bool GpsrPacketDescriptor::setFieldAsString(void *object, int field, int i, cons
         case 1: pp->setRoutingMode(string2long(value)); return true;
         case 2: pp->setDestX(string2double(value)); return true;
         case 3: pp->setDestY(string2double(value)); return true;
-        case 4: pp->setHelloX(string2double(value)); return true;
-        case 5: pp->setHelloY(string2double(value)); return true;
+        case 5: pp->setHelloX(string2double(value)); return true;
+        case 6: pp->setHelloY(string2double(value)); return true;
         default: return false;
     }
 }
@@ -392,6 +428,8 @@ const char *GpsrPacketDescriptor::getFieldStructName(void *object, int field) co
         field -= basedesc->getFieldCount(object);
     }
     switch (field) {
+        case 4: return opp_typename(typeid(Point));
+        case 7: return opp_typename(typeid(Point));
         default: return NULL;
     };
 }
@@ -406,6 +444,8 @@ void *GpsrPacketDescriptor::getFieldStructPointer(void *object, int field, int i
     }
     GpsrPacket *pp = (GpsrPacket *)object; (void)pp;
     switch (field) {
+        case 4: return (void *)(&pp->getDestLocation()); break;
+        case 7: return (void *)(&pp->getHelloLocation()); break;
         default: return NULL;
     }
 }
