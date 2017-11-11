@@ -40,8 +40,6 @@ export default function exec({
 
       nextId++;
     }
-    console.log(o2n, "old to new");
-    console.log(n2o, "new to old");
 
     writer.write(`SN.node[${o2n[source]}].Application.isSource = true\n`);
     writer.write(`SN.node[${o2n[source]}].Application.sink = "${o2n[destination]}"\n`);

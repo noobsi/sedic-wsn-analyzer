@@ -8,3 +8,4 @@ Castalia/Castalia/Simulations/*/*/*.txt
 Castalia/Castalia/Simulations/server/archive/*
 Castalia/Castalia/Simulations/server/dist/
 visualizer/public/
+*.iml
