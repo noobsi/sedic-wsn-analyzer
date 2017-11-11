@@ -26,33 +26,15 @@ void GpsrRouting::startup(){
 
   totalSNnodes = getParentModule()->getParentModule()->getParentModule()->par("numNodes");
 
-  //trace() << "Total node = " << totalSNnodes << endl;
-
   helloInterval = (double)par("helloInterval") / 1000.0;
   activeRouteTimeout = (double)par("activeRouteTimeout") / 1000.0;
-  packetsPerNode = par("packetsPerNode");
   neighborTable.clear();
   neighborTable.reserve(totalSNnodes);
   seqHello = par("seqHello");
 
-  // check that the Application module used has the boolean parameter "isSink"
-  cModule *appModule = getParentModule()->getParentModule()->getSubmodule("Application");
-
-  if (appModule->hasPar("isSink"))
-    isSink = appModule->par("isSink");
-  else
-    isSink = false;
-
-  // no info on sink at initialization
   mySink.id = -1;
   mySink.x = 0;
   mySink.y = 0;
-
-  declareOutput("GPSR Packets received");
-  declareOutput("GPSR Packets sent");
-  declareOutput("GPSR Packets forwarded");
-
-  // we will only send HELLO message if the node's coordinates are set
 }
 
 //================================================================
@@ -103,37 +85,29 @@ void GpsrRouting::fromApplicationLayer(cPacket * pkt, const char *destination){
 
 
   if (string(destination).compare(BROADCAST_NETWORK_ADDRESS)==0) {
-    // if broadcast, just give it to MAC layer
-    /* trace() << "Received data from application layer, final destination: BROADCAST"; */
     toMacLayer(dataPacket, BROADCAST_MAC_ADDRESS);
     collectOutput("GPSR Packets received", "DATA from Application (broadcast)");
     collectOutput("GPSR Packets sent", "DATA (broadcast)");
     return;
   }
 
-  /* trace() << "Received data from application layer, final destination: " << string(destination); */
 
   if (mySink.id==-1) {
-    /* trace() << "Sink coordinates are not set by application yet for sink node " << string(destination); */
-    /* trace() << "Sorry, data will be not sent"; */
+    delete dataPacket;
     return;
   }
   else {
-    /* trace() << "Sink coordinates are set by application for sink node " << mySink.id; */
     dataPacket->setX_dst(mySink.x);
     dataPacket->setY_dst(mySink.y);
 
     int nextHop = getNextHop(dataPacket);
     if (nextHop != -1) {
-      // It exists a closest neighbor to SINK => Greedy Mode
-      /* trace() << "Send data in greedy mode, next hop node " << nextHop << ", final destination: " << string(destination); */
       toMacLayer(dataPacket, nextHop);
       collectOutput("GPSR Packets received", "DATA from Application (unicast,greedy)");
       collectOutput("GPSR Packets sent", "DATA (unicast,greedy)");
       return;
     }
     else {
-      // TODO - drop packet, cannot send
       delete dataPacket;
     }
   }
