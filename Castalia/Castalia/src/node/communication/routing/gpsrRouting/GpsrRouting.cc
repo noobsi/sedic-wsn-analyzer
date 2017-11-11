@@ -21,7 +21,6 @@ Define_Module(GpsrRouting);
 //    startup
 //================================================================
 void GpsrRouting::startup(){
-
   self = getParentModule()->getParentModule()->getIndex();
   isCoordinateSet = false;
 
@@ -100,6 +99,8 @@ void GpsrRouting::fromApplicationLayer(cPacket * pkt, const char *destination){
   dataPacket->setGpsrPacketKind(GPSR_DATA_PACKET);
   dataPacket->setSource(SELF_NETWORK_ADDRESS);
   dataPacket->setDestination(destination);
+  dataPacket->setRoutingMode(GPSR_GREEDY_ROUTING);
+
 
   if (string(destination).compare(BROADCAST_NETWORK_ADDRESS)==0) {
     // if broadcast, just give it to MAC layer
@@ -119,44 +120,33 @@ void GpsrRouting::fromApplicationLayer(cPacket * pkt, const char *destination){
   }
   else {
     /* trace() << "Sink coordinates are set by application for sink node " << mySink.id; */
-  }
+    dataPacket->setX_dst(mySink.x);
+    dataPacket->setY_dst(mySink.y);
 
-  // normally, the application layer has to give the coordinates of the destination
-  // therefore mySink.id should be equal to atoi(destination)
-  // we just need the coordinates stored in MySink.x and mySink.y
-  int nextHop = getNextHopGreedy(mySink.x, mySink.y);
-
-  // set the coordinate of the sink in the data packet so that intermediate node can get it
-  dataPacket->setX_dst(mySink.x);
-  dataPacket->setY_dst(mySink.y);
-
-  if (nextHop != -1) {
-    // It exists a closest neighbor to SINK => Greedy Mode
-    /* trace() << "Send data in greedy mode, next hop node " << nextHop << ", final destination: " << string(destination); */
-    toMacLayer(dataPacket, nextHop);
-    collectOutput("GPSR Packets received", "DATA from Application (unicast,greedy)");
-    collectOutput("GPSR Packets sent", "DATA (unicast,greedy)");
-    return;
-  }
-  else
-  {
-    // It don't exist any closest neighbor to SINK => Perimeter Mode
-    nextHop = getNextHopPerimeter(mySink.x, mySink.y);
-
+    int nextHop = getNextHop(dataPacket);
     if (nextHop != -1) {
-      // the rule of the right hand found. It exists a neighbor
-      /* trace() << "Send data in perimeter mode, next hop node: " << nextHop << ", final destination: " << string(destination); */
+      // It exists a closest neighbor to SINK => Greedy Mode
+      /* trace() << "Send data in greedy mode, next hop node " << nextHop << ", final destination: " << string(destination); */
       toMacLayer(dataPacket, nextHop);
-      collectOutput("GPSR Packets received", "DATA from Application (unicast,perimeter)");
-      collectOutput("GPSR Packets sent", "DATA (unicast,perimeter)");
+      collectOutput("GPSR Packets received", "DATA from Application (unicast,greedy)");
+      collectOutput("GPSR Packets sent", "DATA (unicast,greedy)");
       return;
     }
     else {
-      /* trace() << "PRESENCE of hole in node " << self << */
-        /* " when trying to forward data (from application layer) to node " << string(destination); */
+      // TODO - drop packet, cannot send
       delete dataPacket;
-    }	
-  }	
+    }
+  }
+
+}
+
+
+int GpsrRouting::getNextHop(GpsrPacket *dataPacket) {
+  switch (dataPacket->getRoutingMode()) {
+    case GPSR_GREEDY_ROUTING: return getNextHopGreedy(dataPacket);
+    case GPSR_PERIMETER_ROUTING: return getNextHopPerimeter(dataPacket);
+    default: throw cRuntimeError("Unkown routing mode");
+  }
 }
 
 //================================================================
@@ -271,43 +261,28 @@ void GpsrRouting::processDataPacketFromMacLayer(GpsrPacket* pkt){
     return;
   }
 
-  // otherwise, the node has received a message in unicast (through MAC layer) but is not the final destination
-  // need to find how to reach the final destination which coordinates' are stored in the incoming packet
-  int nextHop = getNextHopGreedy(pkt->getX_dst(), pkt->getY_dst());
 
   // duplicate the packet because we are going to forward it
   GpsrPacket *netPacket = pkt->dup();
-
+  int nextHop = getNextHop(netPacket);
   if (nextHop != -1) {
     // It exists a closest neighbor to SINK => Greedy Mode
-    /* trace() << "Received data (routing unicast) from MAC, forward data in greedy mode. Source node: " << src */
-      /* << ", next hop node: " << nextHop << ", final destination: " << dst; */
+    /* trace() << "Send data in greedy mode, next hop node " << nextHop << ", final destination: " << string(destination); */
     toMacLayer(netPacket, nextHop);
-    collectOutput("GPSR Packets forwarded","greedy");
+    collectOutput("GPSR Packets received", "DATA from Application (unicast,greedy)");
+    collectOutput("GPSR Packets sent", "DATA (unicast,greedy)");
     return;
   }
   else {
-    // It don't exist any closest neighbor to SINK => Perimeter Mode
-    nextHop = getNextHopPerimeter(pkt->getX_dst(), pkt->getY_dst());
-
-    if (nextHop != -1) {
-      // the rule of the right hand  found. It exists a neighbor
-      /* trace() << "Received data from MAC, forward data in perimeter mode. Source node: " << src */
-        /* << ", next hop node: " << nextHop << ", final destination: " << dst; */
-      toMacLayer(netPacket, nextHop);
-      collectOutput("GPSR Packets forwarded","perimeter");
-      return;
-    }
-    else
-      trace() << "PRESENCE of hole in node " << self <<
-        " when trying to forward data (from MAC) from node " << src << " to node " << dst;
-  }		          
+    // TODO - drop packet, cannot send
+    delete netPacket;
+  }
 }
 
 //================================================================
 //    updateNeighborTable
 //================================================================
-void GpsrRouting::updateNeighborTable(int nodeID, int theSN, int x_node, int y_node) {
+void GpsrRouting::updateNeighborTable(int nodeID, int theSN, double x_node, double y_node) {
 
   int pos = -1;
   int tblSize = (int)neighborTable.size();
@@ -358,10 +333,14 @@ void GpsrRouting::updateNeighborTable(int nodeID, int theSN, int x_node, int y_n
 //================================================================
 //   getNextHopGreedy
 //================================================================
-int GpsrRouting::getNextHopGreedy(int x_Sink, int y_Sink){
+int GpsrRouting::getNextHopGreedy(GpsrPacket* dataPacket){
+
+
 
   int nextHop = -1; double dist = 0;
   int tblSize = (int)neighborTable.size();
+  double x_Sink = dataPacket->getX_dst();
+  double y_Sink = dataPacket->getY_dst();
 
   //initializing the minimal distance as my distance to sink
   /* trace() << "Node "<< self << "(" << self_xCoo << "," << self_yCoo << ")"; */
@@ -385,14 +364,14 @@ int GpsrRouting::getNextHopGreedy(int x_Sink, int y_Sink){
 //================================================================
 //    getNextHopPerimeter
 //================================================================
-int GpsrRouting::getNextHopPerimeter(int x_Sink, int y_Sink) {
+int GpsrRouting::getNextHopPerimeter(GpsrPacket* dataPacket) {
   return -1; // TODO - implement this
 }
 
 //================================================================
 //    distance
 //================================================================
-double GpsrRouting::distance(int x1, int y1, int x2, int y2) {
+double GpsrRouting::distance(double x1, double y1, double x2, double y2) {
 
   return sqrt((x1 - x2)*(x1 - x2) + (y1 - y2)*(y1 - y2));	
 }
@@ -424,8 +403,8 @@ void GpsrRouting::handleNetworkControlCommand(cMessage *msg) {
     case SET_GPSR_SINK_POS: 
       {
 
-        mySink.x = (int)cmd->getDouble1();
-        mySink.y = (int)cmd->getDouble2();
+        mySink.x = cmd->getDouble1();
+        mySink.y = cmd->getDouble2();
         mySink.id = cmd->getInt1();
 
         trace() << "Application layer has set sink's position for next transferts SINK_" << mySink.id << "(" << mySink.x << ","

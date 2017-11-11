@@ -38,8 +38,8 @@ using namespace std;
 
 struct GPSR_neighborRecord {
   int id;      // the node's ID
-  int x;       // the node's coordinates : the geographic information
-  int y;
+  double x;       // the node's coordinates : the geographic information
+  double y;
   double ts;   //the last time stamp of the hello msg from it
   int timesRx;   
 
@@ -55,8 +55,8 @@ struct GPSR_neighborRecord {
 
 struct sink {
   int id;          // the Sink's ID
-  int x;       // the Sink's coordonates : the geographic information
-  int y;
+  double x;       // the Sink's coordonates : the geographic information
+  double y;
 };
 
 
@@ -101,10 +101,11 @@ class GpsrRouting: public VirtualRouting {
     void sendHelloMessage();
     void processDataPacketFromMacLayer(GpsrPacket*);
 
-    void updateNeighborTable(int, int, int, int); // add a possible new neighbor
-    int getNextHopGreedy(int, int);              // Greedy forwarding mode
-    int getNextHopPerimeter(int, int);          // Perimeter mode
-    double distance(int, int, int, int); //calculate distance between 2 nodes
+    void updateNeighborTable(int, int, double, double); // add a possible new neighbor
+    int getNextHop(GpsrPacket*);
+    int getNextHopGreedy(GpsrPacket*);              // Greedy forwarding mode
+    int getNextHopPerimeter(GpsrPacket*);          // Perimeter mode
+    double distance(double, double, double, double); //calculate distance between 2 nodes
 };
 
 #endif				//GPSRROUTINGMODULE

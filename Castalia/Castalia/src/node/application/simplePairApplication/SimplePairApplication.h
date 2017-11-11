@@ -24,7 +24,6 @@ enum SimplePairApplicationTimers {
 class SimplePairApplication: public VirtualApplication {
  private:
 	double packet_rate;
-	string recipientAddress;
 	double startupDelay;
   bool isSource;
   string sinkAddress;

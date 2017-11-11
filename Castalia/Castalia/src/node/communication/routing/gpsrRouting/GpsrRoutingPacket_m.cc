@@ -54,6 +54,13 @@ template<typename T>
 inline std::ostream& operator<<(std::ostream& out,const T&) {return out;}
 
 EXECUTE_ON_STARTUP(
+    cEnum *e = cEnum::find("GpsrForwardingMode");
+    if (!e) enums.getInstance()->add(e = new cEnum("GpsrForwardingMode"));
+    e->insert(GPSR_GREEDY_ROUTING, "GPSR_GREEDY_ROUTING");
+    e->insert(GPSR_PERIMETER_ROUTING, "GPSR_PERIMETER_ROUTING");
+);
+
+EXECUTE_ON_STARTUP(
     cEnum *e = cEnum::find("GpsrPacketDef");
     if (!e) enums.getInstance()->add(e = new cEnum("GpsrPacketDef"));
     e->insert(GPSR_DATA_PACKET, "GPSR_DATA_PACKET");
@@ -67,6 +74,7 @@ Register_Class(GpsrPacket);
 GpsrPacket::GpsrPacket(const char *name, int kind) : ::RoutingPacket(name,kind)
 {
     this->GpsrPacketKind_var = 0;
+    this->routingMode_var = 0;
     this->x_src_var = 0;
     this->y_src_var = 0;
     this->x_dst_var = 0;
@@ -93,6 +101,7 @@ GpsrPacket& GpsrPacket::operator=(const GpsrPacket& other)
 void GpsrPacket::copy(const GpsrPacket& other)
 {
     this->GpsrPacketKind_var = other.GpsrPacketKind_var;
+    this->routingMode_var = other.routingMode_var;
     this->x_src_var = other.x_src_var;
     this->y_src_var = other.y_src_var;
     this->x_dst_var = other.x_dst_var;
@@ -103,6 +112,7 @@ void GpsrPacket::parsimPack(cCommBuffer *b)
 {
     ::RoutingPacket::parsimPack(b);
     doPacking(b,this->GpsrPacketKind_var);
+    doPacking(b,this->routingMode_var);
     doPacking(b,this->x_src_var);
     doPacking(b,this->y_src_var);
     doPacking(b,this->x_dst_var);
@@ -113,6 +123,7 @@ void GpsrPacket::parsimUnpack(cCommBuffer *b)
 {
     ::RoutingPacket::parsimUnpack(b);
     doUnpacking(b,this->GpsrPacketKind_var);
+    doUnpacking(b,this->routingMode_var);
     doUnpacking(b,this->x_src_var);
     doUnpacking(b,this->y_src_var);
     doUnpacking(b,this->x_dst_var);
@@ -129,42 +140,52 @@ void GpsrPacket::setGpsrPacketKind(int GpsrPacketKind)
     this->GpsrPacketKind_var = GpsrPacketKind;
 }
 
-int GpsrPacket::getX_src() const
+int GpsrPacket::getRoutingMode() const
+{
+    return routingMode_var;
+}
+
+void GpsrPacket::setRoutingMode(int routingMode)
+{
+    this->routingMode_var = routingMode;
+}
+
+double GpsrPacket::getX_src() const
 {
     return x_src_var;
 }
 
-void GpsrPacket::setX_src(int x_src)
+void GpsrPacket::setX_src(double x_src)
 {
     this->x_src_var = x_src;
 }
 
-int GpsrPacket::getY_src() const
+double GpsrPacket::getY_src() const
 {
     return y_src_var;
 }
 
-void GpsrPacket::setY_src(int y_src)
+void GpsrPacket::setY_src(double y_src)
 {
     this->y_src_var = y_src;
 }
 
-int GpsrPacket::getX_dst() const
+double GpsrPacket::getX_dst() const
 {
     return x_dst_var;
 }
 
-void GpsrPacket::setX_dst(int x_dst)
+void GpsrPacket::setX_dst(double x_dst)
 {
     this->x_dst_var = x_dst;
 }
 
-int GpsrPacket::getY_dst() const
+double GpsrPacket::getY_dst() const
 {
     return y_dst_var;
 }
 
-void GpsrPacket::setY_dst(int y_dst)
+void GpsrPacket::setY_dst(double y_dst)
 {
     this->y_dst_var = y_dst;
 }
@@ -216,7 +237,7 @@ const char *GpsrPacketDescriptor::getProperty(const char *propertyname) const
 int GpsrPacketDescriptor::getFieldCount(void *object) const
 {
     cClassDescriptor *basedesc = getBaseClassDescriptor();
-    return basedesc ? 5+basedesc->getFieldCount(object) : 5;
+    return basedesc ? 6+basedesc->getFieldCount(object) : 6;
 }
 
 unsigned int GpsrPacketDescriptor::getFieldTypeFlags(void *object, int field) const
@@ -233,8 +254,9 @@ unsigned int GpsrPacketDescriptor::getFieldTypeFlags(void *object, int field) co
         FD_ISEDITABLE,
         FD_ISEDITABLE,
         FD_ISEDITABLE,
+        FD_ISEDITABLE,
     };
-    return (field>=0 && field<5) ? fieldTypeFlags[field] : 0;
+    return (field>=0 && field<6) ? fieldTypeFlags[field] : 0;
 }
 
 const char *GpsrPacketDescriptor::getFieldName(void *object, int field) const
@@ -247,12 +269,13 @@ const char *GpsrPacketDescriptor::getFieldName(void *object, int field) const
     }
     static const char *fieldNames[] = {
         "GpsrPacketKind",
+        "routingMode",
         "x_src",
         "y_src",
         "x_dst",
         "y_dst",
     };
-    return (field>=0 && field<5) ? fieldNames[field] : NULL;
+    return (field>=0 && field<6) ? fieldNames[field] : NULL;
 }
 
 int GpsrPacketDescriptor::findField(void *object, const char *fieldName) const
@@ -260,10 +283,11 @@ int GpsrPacketDescriptor::findField(void *object, const char *fieldName) const
     cClassDescriptor *basedesc = getBaseClassDescriptor();
     int base = basedesc ? basedesc->getFieldCount(object) : 0;
     if (fieldName[0]=='G' && strcmp(fieldName, "GpsrPacketKind")==0) return base+0;
-    if (fieldName[0]=='x' && strcmp(fieldName, "x_src")==0) return base+1;
-    if (fieldName[0]=='y' && strcmp(fieldName, "y_src")==0) return base+2;
-    if (fieldName[0]=='x' && strcmp(fieldName, "x_dst")==0) return base+3;
-    if (fieldName[0]=='y' && strcmp(fieldName, "y_dst")==0) return base+4;
+    if (fieldName[0]=='r' && strcmp(fieldName, "routingMode")==0) return base+1;
+    if (fieldName[0]=='x' && strcmp(fieldName, "x_src")==0) return base+2;
+    if (fieldName[0]=='y' && strcmp(fieldName, "y_src")==0) return base+3;
+    if (fieldName[0]=='x' && strcmp(fieldName, "x_dst")==0) return base+4;
+    if (fieldName[0]=='y' && strcmp(fieldName, "y_dst")==0) return base+5;
     return basedesc ? basedesc->findField(object, fieldName) : -1;
 }
 
@@ -278,11 +302,12 @@ const char *GpsrPacketDescriptor::getFieldTypeString(void *object, int field) co
     static const char *fieldTypeStrings[] = {
         "int",
         "int",
-        "int",
-        "int",
-        "int",
+        "double",
+        "double",
+        "double",
+        "double",
     };
-    return (field>=0 && field<5) ? fieldTypeStrings[field] : NULL;
+    return (field>=0 && field<6) ? fieldTypeStrings[field] : NULL;
 }
 
 const char *GpsrPacketDescriptor::getFieldProperty(void *object, int field, const char *propertyname) const
@@ -296,6 +321,9 @@ const char *GpsrPacketDescriptor::getFieldProperty(void *object, int field, cons
     switch (field) {
         case 0:
             if (!strcmp(propertyname,"enum")) return "GpsrPacketDef";
+            return NULL;
+        case 1:
+            if (!strcmp(propertyname,"enum")) return "GpsrForwardingMode";
             return NULL;
         default: return NULL;
     }
@@ -326,10 +354,11 @@ std::string GpsrPacketDescriptor::getFieldAsString(void *object, int field, int 
     GpsrPacket *pp = (GpsrPacket *)object; (void)pp;
     switch (field) {
         case 0: return long2string(pp->getGpsrPacketKind());
-        case 1: return long2string(pp->getX_src());
-        case 2: return long2string(pp->getY_src());
-        case 3: return long2string(pp->getX_dst());
-        case 4: return long2string(pp->getY_dst());
+        case 1: return long2string(pp->getRoutingMode());
+        case 2: return double2string(pp->getX_src());
+        case 3: return double2string(pp->getY_src());
+        case 4: return double2string(pp->getX_dst());
+        case 5: return double2string(pp->getY_dst());
         default: return "";
     }
 }
@@ -345,10 +374,11 @@ bool GpsrPacketDescriptor::setFieldAsString(void *object, int field, int i, cons
     GpsrPacket *pp = (GpsrPacket *)object; (void)pp;
     switch (field) {
         case 0: pp->setGpsrPacketKind(string2long(value)); return true;
-        case 1: pp->setX_src(string2long(value)); return true;
-        case 2: pp->setY_src(string2long(value)); return true;
-        case 3: pp->setX_dst(string2long(value)); return true;
-        case 4: pp->setY_dst(string2long(value)); return true;
+        case 1: pp->setRoutingMode(string2long(value)); return true;
+        case 2: pp->setX_src(string2double(value)); return true;
+        case 3: pp->setY_src(string2double(value)); return true;
+        case 4: pp->setX_dst(string2double(value)); return true;
+        case 5: pp->setY_dst(string2double(value)); return true;
         default: return false;
     }
 }

@@ -19,7 +19,6 @@ Define_Module(SimplePairApplication);
 void SimplePairApplication::startup()
 {
 	packet_rate = par("packet_rate");
-	recipientAddress = par("nextRecipient").stringValue();
 	startupDelay = par("startupDelay");
   isSource = par("isSource");
   sinkAddress = par("sink").stringValue();
@@ -31,8 +30,8 @@ void SimplePairApplication::startup()
 	NodeLocation_type nodeLocation;
 
 	nodeLocation=mobilityModule->getLocation();
-	int px = nodeLocation.x;
-	int py = nodeLocation.y;
+	double px = nodeLocation.x;
+	double py = nodeLocation.y;
 
 	trace() << "Node " << self << " has position (" << px << "," << py << ")" << endl;
 
