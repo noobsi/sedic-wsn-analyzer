@@ -61,8 +61,21 @@ struct Vector {
   double b_;
 };
 
+
+struct Line {
+    double a_;
+    double b_;
+    double c_;
+};
+
 class G {
   public:
+    static Line line(Point p1, Point p2);
+    static Line line(Point *p1, Point *p2) {
+      return line(*p1, *p2);
+    }
+    static void line(double x1, double y1, double x2, double y2, double &a, double &b,
+        double &c);
     static double distance(Point p1, Point p2);
     static double distance(double x1, double y1, double x2, double y2);
     static double norm(double rad) {
@@ -74,6 +87,17 @@ class G {
     	}
     	return rad;
     }
+    static bool is_intersect(Point p1, Point p2, Point p3, Point p4){
+      return is_intersect(&p1, &p2, &p3, &p4);
+    }
+    static bool intersection(Line l1, Line l2, Point &p);
+    static bool is_intersect(Point* p1, Point* p2, Point* p3, Point* p4);
+    static bool intersection(double a1, double b1, double c1, double a2, double b2,
+            double c2, double &x, double &y);
+    static bool intersection(Point* p1, Point* p2, Point* p3, Point* p4, Point& p);
+    static bool intersection(Point p1, Point p2, Point p3, Point p4, Point& p) {
+      return intersection(&p1, &p2, &p3, &p4, p);
+    };
 };
 
 

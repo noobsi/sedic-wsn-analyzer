@@ -102,7 +102,9 @@ class GpsrRouting: public VirtualRouting {
     int getNextHopGreedy(GpsrPacket*);              // Greedy forwarding mode
     int getNextHopPerimeter(GpsrPacket*);          // Perimeter mode
     int getNextHopPerimeterInit(GpsrPacket*);          // Perimeter first time in
-    int rightHandForward(GpsrPacket*);
+    int rightHandForward(GpsrPacket*, Point, int);
+    int faceChange(GpsrPacket*, int);
+    Point getNeighborLocation(int);
     vector<NeighborRecord> getPlanarNeighbors();
 };
 

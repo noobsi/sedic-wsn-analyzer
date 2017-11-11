@@ -96,6 +96,7 @@ void GpsrRouting::fromApplicationLayer(cPacket * pkt, const char *destination){
   else {
     dataPacket->setDestLocation(mySink.location);
     dataPacket->setPreviousLocation(Point()); // previous is unspecified
+    dataPacket->setPreviousId(-1); // no previous node
 
     int nextHop = getNextHop(dataPacket);
     if (nextHop != -1) {
@@ -112,13 +113,6 @@ void GpsrRouting::fromApplicationLayer(cPacket * pkt, const char *destination){
 }
 
 
-int GpsrRouting::getNextHop(GpsrPacket *dataPacket) {
-  switch (dataPacket->getRoutingMode()) {
-    case GPSR_GREEDY_ROUTING: return getNextHopGreedy(dataPacket);
-    case GPSR_PERIMETER_ROUTING: return getNextHopPerimeter(dataPacket);
-    default: throw cRuntimeError("Unkown routing mode");
-  }
-}
 
 //================================================================
 //    fromMacLayer
@@ -231,6 +225,7 @@ void GpsrRouting::processDataPacketFromMacLayer(GpsrPacket* pkt){
   int nextHop = getNextHop(netPacket);
   if (nextHop != -1) {
     netPacket->setPreviousLocation(selfLocation);
+    netPacket->setPreviousId(self);
     toMacLayer(netPacket, nextHop);
     collectOutput("GPSR Packets received", "DATA from Application (unicast,greedy)");
     collectOutput("GPSR Packets sent", "DATA (unicast,greedy)");
@@ -294,8 +289,18 @@ void GpsrRouting::updateNeighborTable(int nodeID, int theSN, Point nodeLocation)
   /* trace() << "--------------"; */
 }
 
+
+int GpsrRouting::getNextHop(GpsrPacket *dataPacket) {
+  switch (dataPacket->getRoutingMode()) {
+    case GPSR_GREEDY_ROUTING: return getNextHopGreedy(dataPacket);
+    case GPSR_PERIMETER_ROUTING: return getNextHopPerimeter(dataPacket);
+    default: throw cRuntimeError("Unkown routing mode");
+  }
+}
+
 //================================================================
-//   getNextHopGreedy
+//   getNextHopGreedy - return next hop of greedy if found one,
+//   other wise set the mode to GPSR and find next GPSR hop
 //================================================================
 int GpsrRouting::getNextHopGreedy(GpsrPacket* dataPacket){
 
@@ -314,22 +319,46 @@ int GpsrRouting::getNextHopGreedy(GpsrPacket* dataPacket){
   }
 
   if (nextHop == -1) {
-    return getNextHopPerimeterInit(dataPacket);
+    trace() << "Turn to perimeter mode";
+    dataPacket->setRoutingMode(GPSR_PERIMETER_ROUTING);
+    dataPacket->setPerimeterRoutingStartLocation(selfLocation);
+    dataPacket->setPerimeterRoutingFaceLocation(selfLocation);
+    nextHop = getNextHopPerimeterInit(dataPacket); // NOTE -> if next hop is always != -1
+    dataPacket->setCurrentFaceFirstSender(self);
+    dataPacket->setCurrentFaceFirstReceiver(nextHop);
   }
 
   return nextHop;
 }
 
 int GpsrRouting::getNextHopPerimeterInit(GpsrPacket* dataPacket) {
-  dataPacket->setRoutingMode(GPSR_PERIMETER_ROUTING);
-  dataPacket->setPerimeterRoutingStartPosition(selfLocation);
-  dataPacket->setPerimeterRoutingFacePosition(selfLocation);
-
-  int nextHop = rightHandForward(dataPacket);
+  int nextHop = rightHandForward(dataPacket, dataPacket->getDestLocation(), atoi(dataPacket->getDestination()));
+  return nextHop;
 }
 
-int GpsrRouting::rightHandForward(GpsrPacket* dataPacket) {
+int GpsrRouting::rightHandForward(GpsrPacket* dataPacket, Point pivotLocation, int pivotId) {
+  trace() << "Right hand forward";
   vector<NeighborRecord> planarNeighbors = getPlanarNeighbors();
+  trace() << "Neighbor size " << planarNeighbors.size();
+  double bpivot = G::norm(atan2(selfLocation.y() - pivotLocation.y(), selfLocation.x() - pivotLocation.x()));
+  double angleMin = 3 * M_PI;
+  double nextHop = -1;
+
+  for (auto &neighbor: planarNeighbors) {
+    if (pivotId == neighbor.id) continue; // ignore the node where this packet comes from
+    Point neighborLocation = neighbor.location;
+    double bneighbor = G::norm(atan2(selfLocation.y() - neighborLocation.y(), selfLocation.x() - neighborLocation.x()));
+    double angle = G::norm(bneighbor - bpivot);
+
+    if (angle < angleMin) {
+      angleMin = angle;
+      nextHop = neighbor.id;
+    }
+  }
+
+  trace() << "Next hop " << nextHop;
+
+  return nextHop;
 }
 
 vector<NeighborRecord> GpsrRouting::getPlanarNeighbors() {
@@ -353,6 +382,8 @@ vector<NeighborRecord> GpsrRouting::getPlanarNeighbors() {
       planarNeighbors.push_back(v);
     }
   }
+
+  return planarNeighbors;
 };
 
 
@@ -360,10 +391,55 @@ vector<NeighborRecord> GpsrRouting::getPlanarNeighbors() {
 //    getNextHopPerimeter
 //================================================================
 int GpsrRouting::getNextHopPerimeter(GpsrPacket* dataPacket) {
-  return -1; // TODO - implement this
+
+  int nextHop = -1;
+  Point startLocation = dataPacket->getPerimeterRoutingStartLocation();
+  Point destLocation = dataPacket->getDestLocation();
+  if (G::distance(selfLocation, destLocation) < G::distance(startLocation, destLocation)) {
+    dataPacket->setRoutingMode(GPSR_GREEDY_ROUTING);
+    return getNextHopGreedy(dataPacket);
+  } else {
+    int proposedNextHop = rightHandForward(dataPacket, dataPacket->getPreviousLocation(), dataPacket->getPreviousId());
+    if (proposedNextHop != -1) {
+      if (self == dataPacket->getCurrentFaceFirstSender() && nextHop == dataPacket->getCurrentFaceFirstReceiver()) {
+        return -1; // we're encountering a loop, better drop the packet
+      }
+      proposedNextHop = faceChange(dataPacket, proposedNextHop);
+    }
+
+    return proposedNextHop;
+  }
 }
 
 
+int GpsrRouting::faceChange(GpsrPacket* dataPacket, int proposedNextHop) {
+  Point intersection;
+  Point proposedLocation = getNeighborLocation(proposedNextHop);
+  Point startLocation = dataPacket->getPerimeterRoutingStartLocation();
+  Point firstFaceLocation = dataPacket->getPerimeterRoutingFaceLocation();
+  Point destLocation = dataPacket->getDestLocation();
+
+  if (G::intersection(proposedLocation, selfLocation, startLocation, destLocation, intersection)) {
+    if (G::distance(intersection, destLocation) < G::distance(firstFaceLocation, destLocation)) {
+      proposedNextHop = rightHandForward(dataPacket, proposedLocation, proposedNextHop);
+      if (proposedNextHop != -1) {
+        proposedNextHop = faceChange(dataPacket, proposedNextHop);
+      }
+    }
+  }
+
+  return proposedNextHop;
+}
+
+Point GpsrRouting::getNeighborLocation(int id) {
+  for (auto &n: neighborTable) {
+    if (n.id == id) {
+      return n.location;
+    }
+  }
+
+  return Point(); // default
+}
 // will handle interaction between the application layer and the GPRS module in order to pass parameters such as
 // the node's position
 void GpsrRouting::handleNetworkControlCommand(cMessage *msg) {

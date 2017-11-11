@@ -63,10 +63,11 @@ enum GpsrPacketDef {
  * {
  *     int GpsrPacketKind @enum(GpsrPacketDef);
  *     int routingMode @enum(GpsrForwardingMode);
+ *     int previousId;
  *     Point previousLocation; // to determine last edge
  *     Point destLocation; // Ld
- *     Point perimeterRoutingStartPosition; // Lp
- *     Point perimeterRoutingFacePosition; // Lf
+ *     Point perimeterRoutingStartLocation; // Lp
+ *     Point perimeterRoutingFaceLocation; // Lf
  *     int currentFaceFirstSender; // e0
  *     int currentFaceFirstReceiver; // e0
  * 
@@ -81,10 +82,11 @@ class GpsrPacket : public ::RoutingPacket
   protected:
     int GpsrPacketKind_var;
     int routingMode_var;
+    int previousId_var;
     Point previousLocation_var;
     Point destLocation_var;
-    Point perimeterRoutingStartPosition_var;
-    Point perimeterRoutingFacePosition_var;
+    Point perimeterRoutingStartLocation_var;
+    Point perimeterRoutingFaceLocation_var;
     int currentFaceFirstSender_var;
     int currentFaceFirstReceiver_var;
     Point helloLocation_var;
@@ -110,18 +112,20 @@ class GpsrPacket : public ::RoutingPacket
     virtual void setGpsrPacketKind(int GpsrPacketKind);
     virtual int getRoutingMode() const;
     virtual void setRoutingMode(int routingMode);
+    virtual int getPreviousId() const;
+    virtual void setPreviousId(int previousId);
     virtual Point& getPreviousLocation();
     virtual const Point& getPreviousLocation() const {return const_cast<GpsrPacket*>(this)->getPreviousLocation();}
     virtual void setPreviousLocation(const Point& previousLocation);
     virtual Point& getDestLocation();
     virtual const Point& getDestLocation() const {return const_cast<GpsrPacket*>(this)->getDestLocation();}
     virtual void setDestLocation(const Point& destLocation);
-    virtual Point& getPerimeterRoutingStartPosition();
-    virtual const Point& getPerimeterRoutingStartPosition() const {return const_cast<GpsrPacket*>(this)->getPerimeterRoutingStartPosition();}
-    virtual void setPerimeterRoutingStartPosition(const Point& perimeterRoutingStartPosition);
-    virtual Point& getPerimeterRoutingFacePosition();
-    virtual const Point& getPerimeterRoutingFacePosition() const {return const_cast<GpsrPacket*>(this)->getPerimeterRoutingFacePosition();}
-    virtual void setPerimeterRoutingFacePosition(const Point& perimeterRoutingFacePosition);
+    virtual Point& getPerimeterRoutingStartLocation();
+    virtual const Point& getPerimeterRoutingStartLocation() const {return const_cast<GpsrPacket*>(this)->getPerimeterRoutingStartLocation();}
+    virtual void setPerimeterRoutingStartLocation(const Point& perimeterRoutingStartLocation);
+    virtual Point& getPerimeterRoutingFaceLocation();
+    virtual const Point& getPerimeterRoutingFaceLocation() const {return const_cast<GpsrPacket*>(this)->getPerimeterRoutingFaceLocation();}
+    virtual void setPerimeterRoutingFaceLocation(const Point& perimeterRoutingFaceLocation);
     virtual int getCurrentFaceFirstSender() const;
     virtual void setCurrentFaceFirstSender(int currentFaceFirstSender);
     virtual int getCurrentFaceFirstReceiver() const;
