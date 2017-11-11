@@ -23,15 +23,14 @@ enum GpsrPacketDef {
 packet GpsrPacket extends RoutingPacket {
     int GpsrPacketKind enum (GpsrPacketDef);
     int routingMode enum (GpsrForwardingMode);
+    Point destLocation; // Ld
+    Point perimeterRoutingStartPosition; // Lp
+    Point perimeterRoutingForwardPosition; // Lf
+    int currentFaceFirstSender; // e0
+    int currentFaceFirstReceiver; // e0
 
-	  double destX;	// for the sink when it is a data message
-	  double destY;
-
-    Point destLocation;
 
     // for hello message
-    double helloX;
-    double helloY;
     Point helloLocation;
 }
 

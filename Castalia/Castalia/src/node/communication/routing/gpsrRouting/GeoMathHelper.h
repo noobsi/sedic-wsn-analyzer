@@ -21,6 +21,8 @@ class G;
 
 struct Point {
   Point() {
+    x_ = NaN;
+    x_ = NaN;
   }
 
   Point(double x, double y) {
@@ -30,6 +32,10 @@ struct Point {
 
   inline double x() const {
     return x_;
+  }
+
+  bool isUnspecified() {
+    return x_ == NaN;
   }
 
   inline double y() const {

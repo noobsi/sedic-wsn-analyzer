@@ -75,10 +75,8 @@ GpsrPacket::GpsrPacket(const char *name, int kind) : ::RoutingPacket(name,kind)
 {
     this->GpsrPacketKind_var = 0;
     this->routingMode_var = 0;
-    this->destX_var = 0;
-    this->destY_var = 0;
-    this->helloX_var = 0;
-    this->helloY_var = 0;
+    this->currentFaceFirstSender_var = 0;
+    this->currentFaceFirstReceiver_var = 0;
 }
 
 GpsrPacket::GpsrPacket(const GpsrPacket& other) : ::RoutingPacket(other)
@@ -102,11 +100,11 @@ void GpsrPacket::copy(const GpsrPacket& other)
 {
     this->GpsrPacketKind_var = other.GpsrPacketKind_var;
     this->routingMode_var = other.routingMode_var;
-    this->destX_var = other.destX_var;
-    this->destY_var = other.destY_var;
     this->destLocation_var = other.destLocation_var;
-    this->helloX_var = other.helloX_var;
-    this->helloY_var = other.helloY_var;
+    this->perimeterRoutingStartPosition_var = other.perimeterRoutingStartPosition_var;
+    this->perimeterRoutingForwardPosition_var = other.perimeterRoutingForwardPosition_var;
+    this->currentFaceFirstSender_var = other.currentFaceFirstSender_var;
+    this->currentFaceFirstReceiver_var = other.currentFaceFirstReceiver_var;
     this->helloLocation_var = other.helloLocation_var;
 }
 
@@ -115,11 +113,11 @@ void GpsrPacket::parsimPack(cCommBuffer *b)
     ::RoutingPacket::parsimPack(b);
     doPacking(b,this->GpsrPacketKind_var);
     doPacking(b,this->routingMode_var);
-    doPacking(b,this->destX_var);
-    doPacking(b,this->destY_var);
     doPacking(b,this->destLocation_var);
-    doPacking(b,this->helloX_var);
-    doPacking(b,this->helloY_var);
+    doPacking(b,this->perimeterRoutingStartPosition_var);
+    doPacking(b,this->perimeterRoutingForwardPosition_var);
+    doPacking(b,this->currentFaceFirstSender_var);
+    doPacking(b,this->currentFaceFirstReceiver_var);
     doPacking(b,this->helloLocation_var);
 }
 
@@ -128,11 +126,11 @@ void GpsrPacket::parsimUnpack(cCommBuffer *b)
     ::RoutingPacket::parsimUnpack(b);
     doUnpacking(b,this->GpsrPacketKind_var);
     doUnpacking(b,this->routingMode_var);
-    doUnpacking(b,this->destX_var);
-    doUnpacking(b,this->destY_var);
     doUnpacking(b,this->destLocation_var);
-    doUnpacking(b,this->helloX_var);
-    doUnpacking(b,this->helloY_var);
+    doUnpacking(b,this->perimeterRoutingStartPosition_var);
+    doUnpacking(b,this->perimeterRoutingForwardPosition_var);
+    doUnpacking(b,this->currentFaceFirstSender_var);
+    doUnpacking(b,this->currentFaceFirstReceiver_var);
     doUnpacking(b,this->helloLocation_var);
 }
 
@@ -156,26 +154,6 @@ void GpsrPacket::setRoutingMode(int routingMode)
     this->routingMode_var = routingMode;
 }
 
-double GpsrPacket::getDestX() const
-{
-    return destX_var;
-}
-
-void GpsrPacket::setDestX(double destX)
-{
-    this->destX_var = destX;
-}
-
-double GpsrPacket::getDestY() const
-{
-    return destY_var;
-}
-
-void GpsrPacket::setDestY(double destY)
-{
-    this->destY_var = destY;
-}
-
 Point& GpsrPacket::getDestLocation()
 {
     return destLocation_var;
@@ -186,24 +164,44 @@ void GpsrPacket::setDestLocation(const Point& destLocation)
     this->destLocation_var = destLocation;
 }
 
-double GpsrPacket::getHelloX() const
+Point& GpsrPacket::getPerimeterRoutingStartPosition()
 {
-    return helloX_var;
+    return perimeterRoutingStartPosition_var;
 }
 
-void GpsrPacket::setHelloX(double helloX)
+void GpsrPacket::setPerimeterRoutingStartPosition(const Point& perimeterRoutingStartPosition)
 {
-    this->helloX_var = helloX;
+    this->perimeterRoutingStartPosition_var = perimeterRoutingStartPosition;
 }
 
-double GpsrPacket::getHelloY() const
+Point& GpsrPacket::getPerimeterRoutingForwardPosition()
 {
-    return helloY_var;
+    return perimeterRoutingForwardPosition_var;
 }
 
-void GpsrPacket::setHelloY(double helloY)
+void GpsrPacket::setPerimeterRoutingForwardPosition(const Point& perimeterRoutingForwardPosition)
 {
-    this->helloY_var = helloY;
+    this->perimeterRoutingForwardPosition_var = perimeterRoutingForwardPosition;
+}
+
+int GpsrPacket::getCurrentFaceFirstSender() const
+{
+    return currentFaceFirstSender_var;
+}
+
+void GpsrPacket::setCurrentFaceFirstSender(int currentFaceFirstSender)
+{
+    this->currentFaceFirstSender_var = currentFaceFirstSender;
+}
+
+int GpsrPacket::getCurrentFaceFirstReceiver() const
+{
+    return currentFaceFirstReceiver_var;
+}
+
+void GpsrPacket::setCurrentFaceFirstReceiver(int currentFaceFirstReceiver)
+{
+    this->currentFaceFirstReceiver_var = currentFaceFirstReceiver;
 }
 
 Point& GpsrPacket::getHelloLocation()
@@ -277,8 +275,8 @@ unsigned int GpsrPacketDescriptor::getFieldTypeFlags(void *object, int field) co
     static unsigned int fieldTypeFlags[] = {
         FD_ISEDITABLE,
         FD_ISEDITABLE,
-        FD_ISEDITABLE,
-        FD_ISEDITABLE,
+        FD_ISCOMPOUND,
+        FD_ISCOMPOUND,
         FD_ISCOMPOUND,
         FD_ISEDITABLE,
         FD_ISEDITABLE,
@@ -298,11 +296,11 @@ const char *GpsrPacketDescriptor::getFieldName(void *object, int field) const
     static const char *fieldNames[] = {
         "GpsrPacketKind",
         "routingMode",
-        "destX",
-        "destY",
         "destLocation",
-        "helloX",
-        "helloY",
+        "perimeterRoutingStartPosition",
+        "perimeterRoutingForwardPosition",
+        "currentFaceFirstSender",
+        "currentFaceFirstReceiver",
         "helloLocation",
     };
     return (field>=0 && field<8) ? fieldNames[field] : NULL;
@@ -314,11 +312,11 @@ int GpsrPacketDescriptor::findField(void *object, const char *fieldName) const
     int base = basedesc ? basedesc->getFieldCount(object) : 0;
     if (fieldName[0]=='G' && strcmp(fieldName, "GpsrPacketKind")==0) return base+0;
     if (fieldName[0]=='r' && strcmp(fieldName, "routingMode")==0) return base+1;
-    if (fieldName[0]=='d' && strcmp(fieldName, "destX")==0) return base+2;
-    if (fieldName[0]=='d' && strcmp(fieldName, "destY")==0) return base+3;
-    if (fieldName[0]=='d' && strcmp(fieldName, "destLocation")==0) return base+4;
-    if (fieldName[0]=='h' && strcmp(fieldName, "helloX")==0) return base+5;
-    if (fieldName[0]=='h' && strcmp(fieldName, "helloY")==0) return base+6;
+    if (fieldName[0]=='d' && strcmp(fieldName, "destLocation")==0) return base+2;
+    if (fieldName[0]=='p' && strcmp(fieldName, "perimeterRoutingStartPosition")==0) return base+3;
+    if (fieldName[0]=='p' && strcmp(fieldName, "perimeterRoutingForwardPosition")==0) return base+4;
+    if (fieldName[0]=='c' && strcmp(fieldName, "currentFaceFirstSender")==0) return base+5;
+    if (fieldName[0]=='c' && strcmp(fieldName, "currentFaceFirstReceiver")==0) return base+6;
     if (fieldName[0]=='h' && strcmp(fieldName, "helloLocation")==0) return base+7;
     return basedesc ? basedesc->findField(object, fieldName) : -1;
 }
@@ -334,11 +332,11 @@ const char *GpsrPacketDescriptor::getFieldTypeString(void *object, int field) co
     static const char *fieldTypeStrings[] = {
         "int",
         "int",
-        "double",
-        "double",
         "Point",
-        "double",
-        "double",
+        "Point",
+        "Point",
+        "int",
+        "int",
         "Point",
     };
     return (field>=0 && field<8) ? fieldTypeStrings[field] : NULL;
@@ -389,11 +387,11 @@ std::string GpsrPacketDescriptor::getFieldAsString(void *object, int field, int 
     switch (field) {
         case 0: return long2string(pp->getGpsrPacketKind());
         case 1: return long2string(pp->getRoutingMode());
-        case 2: return double2string(pp->getDestX());
-        case 3: return double2string(pp->getDestY());
-        case 4: {std::stringstream out; out << pp->getDestLocation(); return out.str();}
-        case 5: return double2string(pp->getHelloX());
-        case 6: return double2string(pp->getHelloY());
+        case 2: {std::stringstream out; out << pp->getDestLocation(); return out.str();}
+        case 3: {std::stringstream out; out << pp->getPerimeterRoutingStartPosition(); return out.str();}
+        case 4: {std::stringstream out; out << pp->getPerimeterRoutingForwardPosition(); return out.str();}
+        case 5: return long2string(pp->getCurrentFaceFirstSender());
+        case 6: return long2string(pp->getCurrentFaceFirstReceiver());
         case 7: {std::stringstream out; out << pp->getHelloLocation(); return out.str();}
         default: return "";
     }
@@ -411,10 +409,8 @@ bool GpsrPacketDescriptor::setFieldAsString(void *object, int field, int i, cons
     switch (field) {
         case 0: pp->setGpsrPacketKind(string2long(value)); return true;
         case 1: pp->setRoutingMode(string2long(value)); return true;
-        case 2: pp->setDestX(string2double(value)); return true;
-        case 3: pp->setDestY(string2double(value)); return true;
-        case 5: pp->setHelloX(string2double(value)); return true;
-        case 6: pp->setHelloY(string2double(value)); return true;
+        case 5: pp->setCurrentFaceFirstSender(string2long(value)); return true;
+        case 6: pp->setCurrentFaceFirstReceiver(string2long(value)); return true;
         default: return false;
     }
 }
@@ -428,6 +424,8 @@ const char *GpsrPacketDescriptor::getFieldStructName(void *object, int field) co
         field -= basedesc->getFieldCount(object);
     }
     switch (field) {
+        case 2: return opp_typename(typeid(Point));
+        case 3: return opp_typename(typeid(Point));
         case 4: return opp_typename(typeid(Point));
         case 7: return opp_typename(typeid(Point));
         default: return NULL;
@@ -444,7 +442,9 @@ void *GpsrPacketDescriptor::getFieldStructPointer(void *object, int field, int i
     }
     GpsrPacket *pp = (GpsrPacket *)object; (void)pp;
     switch (field) {
-        case 4: return (void *)(&pp->getDestLocation()); break;
+        case 2: return (void *)(&pp->getDestLocation()); break;
+        case 3: return (void *)(&pp->getPerimeterRoutingStartPosition()); break;
+        case 4: return (void *)(&pp->getPerimeterRoutingForwardPosition()); break;
         case 7: return (void *)(&pp->getHelloLocation()); break;
         default: return NULL;
     }

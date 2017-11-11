@@ -31,10 +31,7 @@ void GpsrRouting::startup(){
   neighborTable.clear();
   neighborTable.reserve(totalSNnodes);
   seqHello = par("seqHello");
-
   mySink.id = -1;
-  mySink.x = 0;
-  mySink.y = 0;
 }
 
 //================================================================
@@ -97,9 +94,7 @@ void GpsrRouting::fromApplicationLayer(cPacket * pkt, const char *destination){
     return;
   }
   else {
-    dataPacket->setDestX(mySink.x);
-    dataPacket->setDestY(mySink.y);
-    dataPacket->setDestLocation(Point(mySink.x, mySink.y));
+    dataPacket->setDestLocation(mySink.location);
 
     int nextHop = getNextHop(dataPacket);
     if (nextHop != -1) {
@@ -142,7 +137,7 @@ void GpsrRouting::fromMacLayer(cPacket * pkt, int macAddress, double rssi, doubl
         collectOutput("GPSR Packets received", "HELLO");
 
         Point helloLocation = netPacket->getHelloLocation();
-        updateNeighborTable(atoi(netPacket->getSource()), seqHello, helloLocation.x(), helloLocation.y());
+        updateNeighborTable(atoi(netPacket->getSource()), seqHello, helloLocation);
         break;
       }
 
@@ -248,10 +243,10 @@ void GpsrRouting::processDataPacketFromMacLayer(GpsrPacket* pkt){
 //================================================================
 //    updateNeighborTable
 //================================================================
-void GpsrRouting::updateNeighborTable(int nodeID, int theSN, double x_node, double y_node) {
+void GpsrRouting::updateNeighborTable(int nodeID, int theSN, Point nodeLocation) {
 
   int pos = -1;
-  int tblSize = (int)neighborTable.size();
+  int tblSize = (int) neighborTable.size();
 
   for (int i = 0; i < tblSize; i++)
     if (neighborTable[i].id == nodeID) {
@@ -262,10 +257,10 @@ void GpsrRouting::updateNeighborTable(int nodeID, int theSN, double x_node, doub
   // it's a new neighbor
   if (pos == -1) {
     GPSR_neighborRecord newRec;
-
     newRec.id = nodeID;
-    newRec.x = x_node;
-    newRec.y = y_node;
+//    newRec.x = x_node;
+//    newRec.y = y_node;
+    newRec.location = nodeLocation;
     newRec.ts = simTime().dbl();
     newRec.timesRx = 1;
 
@@ -279,8 +274,9 @@ void GpsrRouting::updateNeighborTable(int nodeID, int theSN, double x_node, doub
   } else {
 
     //it's an already known neighbor
-    neighborTable[pos].x = x_node; // updating of location
-    neighborTable[pos].y = y_node;
+//    neighborTable[pos].x = x_node; // updating of location
+//    neighborTable[pos].y = y_node;
+    neighborTable[pos].location = nodeLocation;
     neighborTable[pos].ts = simTime().dbl();
     neighborTable[pos].timesRx++;
   }
@@ -303,17 +299,15 @@ int GpsrRouting::getNextHopGreedy(GpsrPacket* dataPacket){
 
   int nextHop = -1; double dist = 0;
   int tblSize = (int)neighborTable.size();
-  double destX = dataPacket->getDestX();
-  double destY = dataPacket->getDestY();
   Point destLocation = dataPacket->getDestLocation();
   double minDist = G::distance(selfLocation, destLocation);
 
-  for (int i = 0; i < tblSize; i++) {
-    dist = G::distance(neighborTable[i].x, neighborTable[i].y, destX, destY);
+  for (auto &neighbor: neighborTable) {
+    dist = G::distance(destLocation, neighbor.location);
 
     if (dist < minDist) {
       minDist = dist;
-      nextHop = neighborTable[i].id;
+      nextHop = neighbor.id;
     }
   }
 
@@ -354,12 +348,13 @@ void GpsrRouting::handleNetworkControlCommand(cMessage *msg) {
     case SET_GPSR_SINK_POS: 
       {
 
-        mySink.x = cmd->getDouble1();
-        mySink.y = cmd->getDouble2();
+        double x = cmd->getDouble1();
+        double y = cmd->getDouble2();
         mySink.id = cmd->getInt1();
+        mySink.location = Point(x, y);
 
-        trace() << "Application layer has set sink's position for next transferts SINK_" << mySink.id << "(" << mySink.x << ","
-          << mySink.y << ")";
+//        trace() << "Application layer has set sink's position for next transferts SINK_" << mySink.id << "(" << mySink.x << ","
+//          << mySink.y << ")";
 
         break;
       }
