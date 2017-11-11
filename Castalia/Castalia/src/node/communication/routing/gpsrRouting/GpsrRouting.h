@@ -77,8 +77,8 @@ class GpsrRouting: public VirtualRouting {
 
     // GpsrRouting-related member variables
     int self;         // the node's ID
-    double self_xCoo; // store the node's position in meters
-    double self_yCoo;
+    double selfX; // store the node's position in meters
+    double selfY;
     bool isCoordinateSet; // to know whether the node's position has been set or not
     int totalSNnodes;
     int packetsPerNode;
@@ -105,7 +105,6 @@ class GpsrRouting: public VirtualRouting {
     int getNextHop(GpsrPacket*);
     int getNextHopGreedy(GpsrPacket*);              // Greedy forwarding mode
     int getNextHopPerimeter(GpsrPacket*);          // Perimeter mode
-    double distance(double, double, double, double); //calculate distance between 2 nodes
 };
 
 #endif				//GPSRROUTINGMODULE

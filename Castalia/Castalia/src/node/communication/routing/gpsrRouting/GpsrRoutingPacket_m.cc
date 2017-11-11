@@ -75,10 +75,10 @@ GpsrPacket::GpsrPacket(const char *name, int kind) : ::RoutingPacket(name,kind)
 {
     this->GpsrPacketKind_var = 0;
     this->routingMode_var = 0;
-    this->x_src_var = 0;
-    this->y_src_var = 0;
-    this->x_dst_var = 0;
-    this->y_dst_var = 0;
+    this->destX_var = 0;
+    this->destY_var = 0;
+    this->helloX_var = 0;
+    this->helloY_var = 0;
 }
 
 GpsrPacket::GpsrPacket(const GpsrPacket& other) : ::RoutingPacket(other)
@@ -102,10 +102,10 @@ void GpsrPacket::copy(const GpsrPacket& other)
 {
     this->GpsrPacketKind_var = other.GpsrPacketKind_var;
     this->routingMode_var = other.routingMode_var;
-    this->x_src_var = other.x_src_var;
-    this->y_src_var = other.y_src_var;
-    this->x_dst_var = other.x_dst_var;
-    this->y_dst_var = other.y_dst_var;
+    this->destX_var = other.destX_var;
+    this->destY_var = other.destY_var;
+    this->helloX_var = other.helloX_var;
+    this->helloY_var = other.helloY_var;
 }
 
 void GpsrPacket::parsimPack(cCommBuffer *b)
@@ -113,10 +113,10 @@ void GpsrPacket::parsimPack(cCommBuffer *b)
     ::RoutingPacket::parsimPack(b);
     doPacking(b,this->GpsrPacketKind_var);
     doPacking(b,this->routingMode_var);
-    doPacking(b,this->x_src_var);
-    doPacking(b,this->y_src_var);
-    doPacking(b,this->x_dst_var);
-    doPacking(b,this->y_dst_var);
+    doPacking(b,this->destX_var);
+    doPacking(b,this->destY_var);
+    doPacking(b,this->helloX_var);
+    doPacking(b,this->helloY_var);
 }
 
 void GpsrPacket::parsimUnpack(cCommBuffer *b)
@@ -124,10 +124,10 @@ void GpsrPacket::parsimUnpack(cCommBuffer *b)
     ::RoutingPacket::parsimUnpack(b);
     doUnpacking(b,this->GpsrPacketKind_var);
     doUnpacking(b,this->routingMode_var);
-    doUnpacking(b,this->x_src_var);
-    doUnpacking(b,this->y_src_var);
-    doUnpacking(b,this->x_dst_var);
-    doUnpacking(b,this->y_dst_var);
+    doUnpacking(b,this->destX_var);
+    doUnpacking(b,this->destY_var);
+    doUnpacking(b,this->helloX_var);
+    doUnpacking(b,this->helloY_var);
 }
 
 int GpsrPacket::getGpsrPacketKind() const
@@ -150,44 +150,44 @@ void GpsrPacket::setRoutingMode(int routingMode)
     this->routingMode_var = routingMode;
 }
 
-double GpsrPacket::getX_src() const
+double GpsrPacket::getDestX() const
 {
-    return x_src_var;
+    return destX_var;
 }
 
-void GpsrPacket::setX_src(double x_src)
+void GpsrPacket::setDestX(double destX)
 {
-    this->x_src_var = x_src;
+    this->destX_var = destX;
 }
 
-double GpsrPacket::getY_src() const
+double GpsrPacket::getDestY() const
 {
-    return y_src_var;
+    return destY_var;
 }
 
-void GpsrPacket::setY_src(double y_src)
+void GpsrPacket::setDestY(double destY)
 {
-    this->y_src_var = y_src;
+    this->destY_var = destY;
 }
 
-double GpsrPacket::getX_dst() const
+double GpsrPacket::getHelloX() const
 {
-    return x_dst_var;
+    return helloX_var;
 }
 
-void GpsrPacket::setX_dst(double x_dst)
+void GpsrPacket::setHelloX(double helloX)
 {
-    this->x_dst_var = x_dst;
+    this->helloX_var = helloX;
 }
 
-double GpsrPacket::getY_dst() const
+double GpsrPacket::getHelloY() const
 {
-    return y_dst_var;
+    return helloY_var;
 }
 
-void GpsrPacket::setY_dst(double y_dst)
+void GpsrPacket::setHelloY(double helloY)
 {
-    this->y_dst_var = y_dst;
+    this->helloY_var = helloY;
 }
 
 class GpsrPacketDescriptor : public cClassDescriptor
@@ -270,10 +270,10 @@ const char *GpsrPacketDescriptor::getFieldName(void *object, int field) const
     static const char *fieldNames[] = {
         "GpsrPacketKind",
         "routingMode",
-        "x_src",
-        "y_src",
-        "x_dst",
-        "y_dst",
+        "destX",
+        "destY",
+        "helloX",
+        "helloY",
     };
     return (field>=0 && field<6) ? fieldNames[field] : NULL;
 }
@@ -284,10 +284,10 @@ int GpsrPacketDescriptor::findField(void *object, const char *fieldName) const
     int base = basedesc ? basedesc->getFieldCount(object) : 0;
     if (fieldName[0]=='G' && strcmp(fieldName, "GpsrPacketKind")==0) return base+0;
     if (fieldName[0]=='r' && strcmp(fieldName, "routingMode")==0) return base+1;
-    if (fieldName[0]=='x' && strcmp(fieldName, "x_src")==0) return base+2;
-    if (fieldName[0]=='y' && strcmp(fieldName, "y_src")==0) return base+3;
-    if (fieldName[0]=='x' && strcmp(fieldName, "x_dst")==0) return base+4;
-    if (fieldName[0]=='y' && strcmp(fieldName, "y_dst")==0) return base+5;
+    if (fieldName[0]=='d' && strcmp(fieldName, "destX")==0) return base+2;
+    if (fieldName[0]=='d' && strcmp(fieldName, "destY")==0) return base+3;
+    if (fieldName[0]=='h' && strcmp(fieldName, "helloX")==0) return base+4;
+    if (fieldName[0]=='h' && strcmp(fieldName, "helloY")==0) return base+5;
     return basedesc ? basedesc->findField(object, fieldName) : -1;
 }
 
@@ -355,10 +355,10 @@ std::string GpsrPacketDescriptor::getFieldAsString(void *object, int field, int 
     switch (field) {
         case 0: return long2string(pp->getGpsrPacketKind());
         case 1: return long2string(pp->getRoutingMode());
-        case 2: return double2string(pp->getX_src());
-        case 3: return double2string(pp->getY_src());
-        case 4: return double2string(pp->getX_dst());
-        case 5: return double2string(pp->getY_dst());
+        case 2: return double2string(pp->getDestX());
+        case 3: return double2string(pp->getDestY());
+        case 4: return double2string(pp->getHelloX());
+        case 5: return double2string(pp->getHelloY());
         default: return "";
     }
 }
@@ -375,10 +375,10 @@ bool GpsrPacketDescriptor::setFieldAsString(void *object, int field, int i, cons
     switch (field) {
         case 0: pp->setGpsrPacketKind(string2long(value)); return true;
         case 1: pp->setRoutingMode(string2long(value)); return true;
-        case 2: pp->setX_src(string2double(value)); return true;
-        case 3: pp->setY_src(string2double(value)); return true;
-        case 4: pp->setX_dst(string2double(value)); return true;
-        case 5: pp->setY_dst(string2double(value)); return true;
+        case 2: pp->setDestX(string2double(value)); return true;
+        case 3: pp->setDestY(string2double(value)); return true;
+        case 4: pp->setHelloX(string2double(value)); return true;
+        case 5: pp->setHelloY(string2double(value)); return true;
         default: return false;
     }
 }

@@ -13,6 +13,7 @@
 /*           Congduc Pham <congduc.pham@univ-pau.fr>     */
 /*********************************************************/
 #include "GpsrRouting.h"
+#include "GeoMathHelper.h"
 
 
 Define_Module(GpsrRouting);
@@ -97,8 +98,8 @@ void GpsrRouting::fromApplicationLayer(cPacket * pkt, const char *destination){
     return;
   }
   else {
-    dataPacket->setX_dst(mySink.x);
-    dataPacket->setY_dst(mySink.y);
+    dataPacket->setDestX(mySink.x);
+    dataPacket->setDestY(mySink.y);
 
     int nextHop = getNextHop(dataPacket);
     if (nextHop != -1) {
@@ -138,13 +139,9 @@ void GpsrRouting::fromMacLayer(cPacket * pkt, int macAddress, double rssi, doubl
     // process hello msg
     case GPSR_HELLO_MSG_PACKET: 
       {
-
-        /* trace() << "Received HELLO from node " << string(netPacket->getSource()) << "(" << */
-          /* netPacket->getX_src() << "," << netPacket->getY_src()<< ")"; */
-
         collectOutput("GPSR Packets received", "HELLO");
 
-        updateNeighborTable(atoi(netPacket->getSource()), seqHello, netPacket->getX_src(),netPacket->getY_src());
+        updateNeighborTable(atoi(netPacket->getSource()), seqHello, netPacket->getHelloX(),netPacket->getHelloY());
         break;
       }
 
@@ -191,14 +188,11 @@ void GpsrRouting::sendHelloMessage(){
 
   GpsrPacket *helloMsg = new GpsrPacket("GPSR hello message packet", NETWORK_LAYER_PACKET);
   helloMsg->setGpsrPacketKind(GPSR_HELLO_MSG_PACKET);
-  helloMsg->setX_src(self_xCoo);		
-  helloMsg->setY_src(self_yCoo);
+  helloMsg->setHelloX(selfX);
+  helloMsg->setHelloY(selfY);
   helloMsg->setSource(SELF_NETWORK_ADDRESS);
   helloMsg->setDestination(BROADCAST_NETWORK_ADDRESS);
   toMacLayer(helloMsg, BROADCAST_MAC_ADDRESS);
-
-  /* trace() << "Broadcast HELLO(" << self_xCoo << "," << self_yCoo << ") seq=" << seqHello; */
-
   collectOutput("GPSR Packets sent", "HELLO");
 
   seqHello++;
@@ -240,8 +234,6 @@ void GpsrRouting::processDataPacketFromMacLayer(GpsrPacket* pkt){
   GpsrPacket *netPacket = pkt->dup();
   int nextHop = getNextHop(netPacket);
   if (nextHop != -1) {
-    // It exists a closest neighbor to SINK => Greedy Mode
-    /* trace() << "Send data in greedy mode, next hop node " << nextHop << ", final destination: " << string(destination); */
     toMacLayer(netPacket, nextHop);
     collectOutput("GPSR Packets received", "DATA from Application (unicast,greedy)");
     collectOutput("GPSR Packets sent", "DATA (unicast,greedy)");
@@ -313,18 +305,12 @@ int GpsrRouting::getNextHopGreedy(GpsrPacket* dataPacket){
 
   int nextHop = -1; double dist = 0;
   int tblSize = (int)neighborTable.size();
-  double x_Sink = dataPacket->getX_dst();
-  double y_Sink = dataPacket->getY_dst();
-
-  //initializing the minimal distance as my distance to sink
-  /* trace() << "Node "<< self << "(" << self_xCoo << "," << self_yCoo << ")"; */
-
-  double minDist = distance(self_xCoo, self_yCoo, x_Sink, y_Sink);
-  //trace()<< "Distance ("<< self <<", Sink)" << " = " << minDist << endl; 
+  double destX = dataPacket->getDestX();
+  double destY = dataPacket->getDestY();
+  double minDist = G::distance(selfX, selfY, destX, destY);
 
   for (int i = 0; i < tblSize; i++) {
-    dist = distance(neighborTable[i].x, neighborTable[i].y, x_Sink, y_Sink);
-    /* trace() << "Distance ("<< neighborTable[i].id <<", Sink)" << " = " << dist; */
+    dist = G::distance(neighborTable[i].x, neighborTable[i].y, destX, destY);
 
     if (dist < minDist) {
       minDist = dist;
@@ -342,13 +328,6 @@ int GpsrRouting::getNextHopPerimeter(GpsrPacket* dataPacket) {
   return -1; // TODO - implement this
 }
 
-//================================================================
-//    distance
-//================================================================
-double GpsrRouting::distance(double x1, double y1, double x2, double y2) {
-
-  return sqrt((x1 - x2)*(x1 - x2) + (y1 - y2)*(y1 - y2));	
-}
 
 // will handle interaction between the application layer and the GPRS module in order to pass parameters such as
 // the node's position
@@ -360,11 +339,9 @@ void GpsrRouting::handleNetworkControlCommand(cMessage *msg) {
     case SET_GPSR_NODE_POS: 
       {
 
-        self_xCoo = cmd->getDouble1();
-        self_yCoo = cmd->getDouble2();
+        selfX = cmd->getDouble1();
+        selfY = cmd->getDouble2();
         isCoordinateSet = true;
-
-        trace() << "Application layer has set node's position for to (" << self_xCoo << "," << self_yCoo << ")";
 
         // normally, this is the first HELLO message
         if (isCoordinateSet) {

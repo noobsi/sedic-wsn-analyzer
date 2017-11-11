@@ -17,10 +17,11 @@
 
 // cplusplus {{
 #include "RoutingPacket_m.h"
+#include "GeoMathHelper.h"
 // }}
 
 /**
- * Enum generated from <tt>src/node/communication/routing/gpsrRouting/GpsrRoutingPacket.msg:8</tt> by nedtool.
+ * Enum generated from <tt>src/node/communication/routing/gpsrRouting/GpsrRoutingPacket.msg:9</tt> by nedtool.
  * <pre>
  * enum GpsrForwardingMode
  * {
@@ -36,7 +37,7 @@ enum GpsrForwardingMode {
 };
 
 /**
- * Enum generated from <tt>src/node/communication/routing/gpsrRouting/GpsrRoutingPacket.msg:13</tt> by nedtool.
+ * Enum generated from <tt>src/node/communication/routing/gpsrRouting/GpsrRoutingPacket.msg:14</tt> by nedtool.
  * <pre>
  * enum GpsrPacketDef
  * {
@@ -56,20 +57,22 @@ enum GpsrPacketDef {
 };
 
 /**
- * Class generated from <tt>src/node/communication/routing/gpsrRouting/GpsrRoutingPacket.msg:20</tt> by nedtool.
+ * Class generated from <tt>src/node/communication/routing/gpsrRouting/GpsrRoutingPacket.msg:21</tt> by nedtool.
  * <pre>
  * packet GpsrPacket extends RoutingPacket
  * {
  *     int GpsrPacketKind @enum(GpsrPacketDef);
  *     int routingMode @enum(GpsrForwardingMode);
  * 
+ * 
+ * 
+ *     double destX;	// for the sink when it is a data message
+ *     double destY;
+ * 
+ * 
  *     // for hello message
- *     double x_src;
- *     double y_src;
- * 
- * 
- *     double x_dst;	// for the sink when it is a data message
- *     double y_dst;
+ *     double helloX;
+ *     double helloY;
  * }
  * </pre>
  */
@@ -78,10 +81,10 @@ class GpsrPacket : public ::RoutingPacket
   protected:
     int GpsrPacketKind_var;
     int routingMode_var;
-    double x_src_var;
-    double y_src_var;
-    double x_dst_var;
-    double y_dst_var;
+    double destX_var;
+    double destY_var;
+    double helloX_var;
+    double helloY_var;
 
   private:
     void copy(const GpsrPacket& other);
@@ -104,14 +107,14 @@ class GpsrPacket : public ::RoutingPacket
     virtual void setGpsrPacketKind(int GpsrPacketKind);
     virtual int getRoutingMode() const;
     virtual void setRoutingMode(int routingMode);
-    virtual double getX_src() const;
-    virtual void setX_src(double x_src);
-    virtual double getY_src() const;
-    virtual void setY_src(double y_src);
-    virtual double getX_dst() const;
-    virtual void setX_dst(double x_dst);
-    virtual double getY_dst() const;
-    virtual void setY_dst(double y_dst);
+    virtual double getDestX() const;
+    virtual void setDestX(double destX);
+    virtual double getDestY() const;
+    virtual void setDestY(double destY);
+    virtual double getHelloX() const;
+    virtual void setHelloX(double helloX);
+    virtual double getHelloY() const;
+    virtual void setHelloY(double helloY);
 };
 
 inline void doPacking(cCommBuffer *b, GpsrPacket& obj) {obj.parsimPack(b);}

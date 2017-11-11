@@ -1,6 +1,7 @@
 
 cplusplus {{
 #include "RoutingPacket_m.h"
+#include "GeoMathHelper.h"
 }}
 
 class RoutingPacket;
@@ -21,13 +22,15 @@ packet GpsrPacket extends RoutingPacket {
     int GpsrPacketKind enum (GpsrPacketDef);
     int routingMode enum (GpsrForwardingMode);
 
+
+
+	  double destX;	// for the sink when it is a data message
+	  double destY;
+
+
     // for hello message
-    double x_src;
-    double y_src;
-
-
-	  double x_dst;	// for the sink when it is a data message
-	  double y_dst;
+    double helloX;
+    double helloY;
 }
 
 
