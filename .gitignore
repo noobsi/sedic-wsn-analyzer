@@ -10,3 +10,5 @@ visualizer/public/
 Castalia/Castalia/Makefile
 Castalia/Castalia/Simulations/server/package-lock.json
 visualizer/package-lock.json
+Castalia/Castalia/Simulations/server/logs
+Castalia/Castalia/Simulations/server/public
