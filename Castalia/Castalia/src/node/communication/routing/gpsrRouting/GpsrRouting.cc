@@ -106,6 +106,8 @@ void GpsrRouting::fromApplicationLayer(cPacket * pkt, const char *destination){
 
     int nextHop = getNextHop(dataPacket);
     if (nextHop != -1) {
+      dataPacket->setPreviousLocation(selfLocation); // previous is unspecified
+      dataPacket->setPreviousId(self); // no previous node
       trace() << "WSN_EVENT SEND packetId:" << dataPacket->getPacketId() << " source:" << dataPacket->getSource()
         << " destination:" << dataPacket->getDestination() << " current:" << self;
       trace() << "WSN_EVENT ENERGY id:" << self << " energy:" << resourceManager->getRemainingEnergy();
@@ -355,28 +357,28 @@ int GpsrRouting::getNextHopPerimeterInit(GpsrPacket* dataPacket) {
 }
 
 int GpsrRouting::rightHandForward(GpsrPacket* dataPacket, Point pivotLocation, int pivotId) {
-  trace() << "pivot Id " << pivotId;
-  trace() << "self " << selfLocation.x() << " " << selfLocation.y();
-  trace() << "pivot " << pivotLocation.x() << " " << pivotLocation.y();
+//  trace() << "pivot Id " << pivotId;
+//  trace() << "self " << selfLocation.x() << " " << selfLocation.y();
+//  trace() << "pivot " << pivotLocation.x() << " " << pivotLocation.y();
   vector<NeighborRecord> planarNeighbors = getPlanarNeighbors();
   double bpivot = G::norm(atan2(selfLocation.y() - pivotLocation.y(), selfLocation.x() - pivotLocation.x()));
-  trace() << "bpivot " << bpivot;
+//  trace() << "bpivot " << bpivot;
   double angleMin = 3 * M_PI;
   double nextHop = -1;
   bool backUp = false;
 
   for (auto &neighbor: planarNeighbors) {
-    trace() << "Neighbor " << neighbor.id;
+//    trace() << "Neighbor " << neighbor.id;
     if (pivotId == neighbor.id) {
       backUp = true;
       continue;
     }
     Point neighborLocation = neighbor.location;
-    trace() << "neighbor " << neighborLocation.x() << " " << neighborLocation.y();
+//    trace() << "neighbor " << neighborLocation.x() << " " << neighborLocation.y();
     double bneighbor = G::norm(atan2(selfLocation.y() - neighborLocation.y(), selfLocation.x() - neighborLocation.x()));
-    trace() << "bneighbor " << bneighbor;
+//    trace() << "bneighbor " << bneighbor;
     double angle = G::norm(bneighbor - bpivot);
-    trace() << "Angle " << angle;
+//    trace() << "Angle " << angle;
 
     if (angle < angleMin) {
       angleMin = angle;
@@ -432,6 +434,7 @@ int GpsrRouting::getNextHopPerimeter(GpsrPacket* dataPacket) {
     dataPacket->setRoutingMode(GPSR_GREEDY_ROUTING);
     return getNextHopGreedy(dataPacket);
   } else {
+//    trace() << "Hehe " << dataPacket->getPreviousId();
     int proposedNextHop = rightHandForward(dataPacket, dataPacket->getPreviousLocation(), dataPacket->getPreviousId());
     trace() << "WSN_EVENT DEBUG first apply right hand forward, found: " << proposedNextHop;
     if (proposedNextHop != -1) {
