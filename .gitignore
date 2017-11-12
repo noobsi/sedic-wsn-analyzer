@@ -9,3 +9,6 @@ Castalia/Castalia/Simulations/server/archive/*
 Castalia/Castalia/Simulations/server/dist/
 visualizer/public/
 *.iml
+Castalia/Castalia/Makefile
+Castalia/Castalia/Simulations/server/package-lock.json
+visualizer/package-lock.json
