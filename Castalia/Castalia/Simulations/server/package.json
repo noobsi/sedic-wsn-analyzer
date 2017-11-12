@@ -35,9 +35,12 @@
     "babel-cli": "^6.24.1",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "babel-preset-env": "^1.4.0",
+    "bluebird": "latest",
     "body-parser": "^1.17.1",
+    "cors": "^2.8.4",
     "express": "^4.15.2",
     "morgan": "^1.7.0",
+    "node-cmd": "^3.0.0",
     "pug": "^2.0.0-beta11",
     "rimraf": "^2.6.1"
   },
