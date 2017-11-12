@@ -112,7 +112,7 @@ function exec({config, sessionId}) {
         const type = getType(line);
 
         if (type === 'ENERGY') {
-          let regex = /id:(\d+) energy:(\d+(\.\d+){0,1})/gi;
+          let regex = /id:(\d+) energy:([\d\.]+)/gi;
           let match = regex.exec(line);
           if (match) {
             let id = parseInt(match[1]);
@@ -121,7 +121,7 @@ function exec({config, sessionId}) {
             energyWriter.write(`${JSON.stringify(event)}\n`);
           }
         } else if (type === 'FINAL') {
-          let regex = /id:(\d+) x:(\d+(\.\d+){0,1}) y:(\d+(\.\d+){0,1})/gi;
+          let regex = /id:(\d+) x:([\d\.]+) y:([\d\.]+)/gi;
           let match = regex.exec(line);
           if (match) {
             let id = parseInt(match[1]);
