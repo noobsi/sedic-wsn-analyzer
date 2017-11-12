@@ -17,8 +17,28 @@ const randomSessionId = (length) => {
   return text;
 };
 
+let queue = [];
 
-export default function exec(config, callback) {
+export function register(config, callback) {
+  let sessionId = randomSessionId(5);
+  queue.push({sessionId, config});
+  session.markStatus(sessionId, "enqueued", "Simulation is registered, waiting to be executed");
+  callback(null, {
+    status: "OK",
+    sessionId: sessionId,
+    error: null,
+  });
+
+  if (queue.length === 1) {
+    const {config, sessionId} = queue.shift();
+    exec({config, sessionId});
+  }
+}
+
+
+
+
+function exec({config, sessionId}) {
   const {
     network: {
       fieldWidth, fieldHeight,
@@ -30,9 +50,7 @@ export default function exec(config, callback) {
   } = config;
   cmd.get(`rm -rf Castalia-Trace.txt`);
 
-  let sessionId = randomSessionId(5);
   let fileName = `${sessionId}.ini`;
-
   const requestFileName = `logs/${sessionId}_request.txt`;
   fs.writeFile(requestFileName, JSON.stringify(config), () => {});
 
@@ -72,11 +90,6 @@ export default function exec(config, callback) {
 
     writer.end();
     session.markStatus(sessionId, "running", "Simulation is running...");
-    callback(null, {
-      status: "OK",
-      sessionId: sessionId,
-      error: null,
-    });
 
 
     return getAsync(`
@@ -139,8 +152,16 @@ export default function exec(config, callback) {
     eventWriter.end();
     nodeWriter.end();
     session.markStatus(sessionId, "completed", "Simulation completed");
+    if (queue.length >= 1)  {
+      const {config, sessionId} = queue.shift();
+      exec({config, sessionId});
+    }
   }).catch(err => {
     session.markStatus(sessionId, "error", err.toString());
+    if (queue.length >= 1)  {
+      const {config, sessionId} = queue.shift();
+      exec({config, sessionId});
+    }
   });
 }
 

@@ -1,5 +1,5 @@
 import {Router} from 'express';
-import exec from './executor/exec'
+import {register} from './executor/exec'
 import fs from 'fs'
 import path from 'path';
 import session from './session'
@@ -20,7 +20,7 @@ const routes = Router();
  * your use case.
  */
 routes.post('/exec', (req, res) => {
-  exec(req.body, (error, simulationResult) => {
+  register(req.body, (error, simulationResult) => {
     if (error) {
       res.json({
         status: "error",
