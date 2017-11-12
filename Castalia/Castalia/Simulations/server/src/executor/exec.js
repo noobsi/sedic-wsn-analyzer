@@ -131,6 +131,7 @@ function exec({config, sessionId}) {
             nodeWriter.write(`${JSON.stringify(node)}\n`);
           }
         } else if (type === 'SEND' || type === 'FORWARD' || type === 'RECEIVE') {
+          console.log(line);
           let regex = /packetId:(\d+) source:(\d+) destination:(\d+) current:(\d+)/;
           let match = regex.exec(line);
           if (match) {
