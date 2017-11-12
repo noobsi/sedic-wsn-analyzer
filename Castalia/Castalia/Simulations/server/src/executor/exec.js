@@ -42,7 +42,7 @@ function exec({config, sessionId}) {
   const {
     network: {
       fieldWidth, fieldHeight,
-      nodes, nodeConfig: {routingAlgorithm}
+      nodes, nodeConfig: {routingAlgorithm, macInterface}
     },
     simulation: {
       traffic, timeLimit
@@ -64,10 +64,41 @@ function exec({config, sessionId}) {
   `).then(() => {
     let writer = fs.createWriteStream(fileName, {'flags': 'a'});
 
+    if (routingAlgorithm) {
+      if (routingAlgorithm.toLowerCase() === 'greedy') {
+        writer.write(`SN.node[*].Communication.RoutingProtocolName = "GreedyRouting"\n`)
+      } else if (routingAlgorithm.toLowerCase() === 'gpsr') {
+        writer.write(`SN.node[*].Communication.RoutingProtocolName = "GpsrRouting"\n`)
+      } else {
+        writer.write(`SN.node[*].Communication.RoutingProtocolName = "GpsrRouting"\n`)
+      }
+    } else {
+      writer.write(`SN.node[*].Communication.RoutingProtocolName = "GpsrRouting"\n`)
+    }
+
+
+    if (macInterface) {
+      if (['TMAC', 'TunableMAC', 'Basic802154', 'BypassMAC', 'BaselineBANMac'].find((name) => name === macInterface)) {
+        if (macInterface === 'TunableMAC') {
+          writer.write(`SN.node[*].Communication.MACProtocolName = "TunableMAC"\n`);
+          writer.write(`SN.node[*].Communication.MAC.dutyCycle = 1.0\n`);
+          writer.write(`SN.node[*].Communication.MAC.randomTxOffset = 0\n`);
+          writer.write(`SN.node[*].Communication.MAC.backoffType = 2\n`);
+        } else {
+          writer.write(`SN.node[*].Communication.MACProtocolName = "${macInterface}"\n`);
+        }
+      }
+    } else {
+      writer.write(`SN.node[*].Communication.MACProtocolName = "TunableMAC"\n`);
+      writer.write(`SN.node[*].Communication.MAC.dutyCycle = 1.0\n`);
+      writer.write(`SN.node[*].Communication.MAC.randomTxOffset = 0\n`);
+      writer.write(`SN.node[*].Communication.MAC.backoffType = 2\n`);
+    }
 
     writer.write(`SN.numNodes = ${nodes.length}\n`);
     writer.write(`SN.field_x = ${fieldWidth}\n`);
     writer.write(`SN.field_y = ${fieldHeight}\n`);
+
 
     for (let node of nodes) {
       const {id, x, y} = node;
@@ -130,7 +161,7 @@ function exec({config, sessionId}) {
             let node = {"id": id, "x": x, "y": y, "d_time": -1} ;
             nodeWriter.write(`${JSON.stringify(node)}\n`);
           }
-        } else if (type === 'SEND' || type === 'FORWARD' || type === 'RECEIVE') {
+        } else if (type === 'SEND' || type === 'FORWARD' || type === 'RECEIVE' || type === 'DROP') {
           let regex = /packetId:(\d+) source:(\d+) destination:(\d+) current:(\d+)/;
           let match = regex.exec(line);
           if (match) {
