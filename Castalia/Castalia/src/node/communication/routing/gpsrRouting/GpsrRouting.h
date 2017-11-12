@@ -64,6 +64,8 @@ enum GpsrRoutingTimers {
 
 class GpsrRouting: public VirtualRouting {
   private:
+
+    static int nextId;
     // Parameters
     int GpsrSetupFrameOverhead;	// in bytes
     double netSetupTimeout;
@@ -82,6 +84,7 @@ class GpsrRouting: public VirtualRouting {
     sink mySink; 
     int seqHello;
     vector<NeighborRecord> neighborTable;
+    ResourceManager *resourceManager;
 
   protected:
 

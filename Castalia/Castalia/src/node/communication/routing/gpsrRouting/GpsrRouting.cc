@@ -17,6 +17,8 @@
 
 Define_Module(GpsrRouting);
 
+int GpsrRouting::nextId;
+
 //================================================================
 //    startup
 //================================================================
@@ -25,6 +27,8 @@ void GpsrRouting::startup(){
   isCoordinateSet = false;
 
   totalSNnodes = getParentModule()->getParentModule()->getParentModule()->par("numNodes");
+	resourceManager = check_and_cast <ResourceManager*>(getParentModule()->getParentModule()->getParentModule()
+	  ->getSubmodule("node", self)->getSubmodule("ResourceManager"));
 
   helloInterval = (double)par("helloInterval") / 1000.0;
   activeRouteTimeout = (double)par("activeRouteTimeout") / 1000.0;
@@ -32,6 +36,7 @@ void GpsrRouting::startup(){
   neighborTable.reserve(totalSNnodes);
   seqHello = par("seqHello");
   mySink.id = -1;
+  nextId = 0; // static member
 }
 
 //================================================================
@@ -97,9 +102,13 @@ void GpsrRouting::fromApplicationLayer(cPacket * pkt, const char *destination){
     dataPacket->setDestLocation(mySink.location);
     dataPacket->setPreviousLocation(Point()); // previous is unspecified
     dataPacket->setPreviousId(-1); // no previous node
+    dataPacket->setPacketId(nextId++);
 
     int nextHop = getNextHop(dataPacket);
     if (nextHop != -1) {
+      trace() << "WSN_EVENT SEND packetId:" << dataPacket->getPacketId() << " source:" << dataPacket->getSource()
+        << " destination:" << dataPacket->getDestination() << " current:" << self;
+      trace() << "WSN_EVENT ENERGY id:" << self << " energy:" << resourceManager->getRemainingEnergy();
       toMacLayer(dataPacket, nextHop);
       collectOutput("GPSR Packets received", "DATA from Application (unicast,greedy)");
       collectOutput("GPSR Packets sent", "DATA (unicast,greedy)");
@@ -153,9 +162,9 @@ void GpsrRouting::fromMacLayer(cPacket * pkt, int macAddress, double rssi, doubl
 
         if ((dst.compare(BROADCAST_NETWORK_ADDRESS) == 0))
           trace() << "Received data from node " << src << " by broadcast";
-        else
-          /* trace() << "Received data from node " << src << ", final destination: " << dst; */
-          trace() << "RECEIVED " << self << " SOURCE " << src;
+//        else
+//          /* trace() << "Received data from node " << src << ", final destination: " << dst; */
+//          trace() << "RECEIVED " << self << " SOURCE " << src;
 
         processDataPacketFromMacLayer(netPacket);
         break;
@@ -169,7 +178,7 @@ void GpsrRouting::fromMacLayer(cPacket * pkt, int macAddress, double rssi, doubl
 //    finishSpecific
 //================================================================
 void GpsrRouting::finishSpecific() {
-
+  trace() << "WSN_EVENT FINAL" << " id:" << self << " x:" << selfLocation.x() << " y:" << selfLocation.y() << " deathTime:-1";
 }
 
 //================================================================
@@ -199,7 +208,9 @@ void GpsrRouting::processDataPacketFromMacLayer(GpsrPacket* pkt){
 
   // if the node is the destination
   if ((dst.compare(SELF_NETWORK_ADDRESS) == 0) || (self == mySink.id)) {
-    trace() << "Received data for myself (routing unicast) from MAC, send data to application layer. Source node: " << src;
+    trace() << "WSN_EVENT RECEIVE packetId:" << pkt->getPacketId() << " source:" << pkt->getSource()
+      << " destination:" << pkt->getDestination() << " current:" << self;
+    trace() << "WSN_EVENT ENERGY id:" << self << " energy:" << resourceManager->getRemainingEnergy();
     collectOutput("GPSR Packets received", "final from MAC");
 #ifdef DEBUG_OUTPUT_LEVEL2		
     collectOutput("GPSR Packets received", atoi(src.c_str()), "final from MAC");
@@ -226,12 +237,18 @@ void GpsrRouting::processDataPacketFromMacLayer(GpsrPacket* pkt){
   if (nextHop != -1) {
     netPacket->setPreviousLocation(selfLocation);
     netPacket->setPreviousId(self);
+
+    trace() << "WSN_EVENT FORWARD packetId:" << pkt->getPacketId() << " source:" << pkt->getSource()
+      << " destination:" << pkt->getDestination() << " current:" << self;
+    trace() << "WSN_EVENT ENERGY id:" << self << " energy:" << resourceManager->getRemainingEnergy();
     toMacLayer(netPacket, nextHop);
     collectOutput("GPSR Packets received", "DATA from Application (unicast,greedy)");
     collectOutput("GPSR Packets sent", "DATA (unicast,greedy)");
     return;
   }
   else {
+    trace() << "WSN_EVENT DROP packetId:" << pkt->getPacketId() << " source:" << pkt->getSource()
+      << " destination:" << pkt->getDestination() << " current:" << self;
     // TODO - drop packet, cannot send
     delete netPacket;
   }
@@ -319,7 +336,7 @@ int GpsrRouting::getNextHopGreedy(GpsrPacket* dataPacket){
   }
 
   if (nextHop == -1) {
-    trace() << "Turn to perimeter mode";
+    trace() << "WSN_EVENT DEBUG Turn to perimeter mode at " << self;
     dataPacket->setRoutingMode(GPSR_PERIMETER_ROUTING);
     dataPacket->setPerimeterRoutingStartLocation(selfLocation);
     dataPacket->setPerimeterRoutingFaceLocation(selfLocation);
@@ -333,22 +350,33 @@ int GpsrRouting::getNextHopGreedy(GpsrPacket* dataPacket){
 
 int GpsrRouting::getNextHopPerimeterInit(GpsrPacket* dataPacket) {
   int nextHop = rightHandForward(dataPacket, dataPacket->getDestLocation(), atoi(dataPacket->getDestination()));
+  trace() << "WSN_EVENT DEBUG Determine first next hop perimeter: " << nextHop;
   return nextHop;
 }
 
 int GpsrRouting::rightHandForward(GpsrPacket* dataPacket, Point pivotLocation, int pivotId) {
-  trace() << "Right hand forward";
+  trace() << "pivot Id " << pivotId;
+  trace() << "self " << selfLocation.x() << " " << selfLocation.y();
+  trace() << "pivot " << pivotLocation.x() << " " << pivotLocation.y();
   vector<NeighborRecord> planarNeighbors = getPlanarNeighbors();
-  trace() << "Neighbor size " << planarNeighbors.size();
   double bpivot = G::norm(atan2(selfLocation.y() - pivotLocation.y(), selfLocation.x() - pivotLocation.x()));
+  trace() << "bpivot " << bpivot;
   double angleMin = 3 * M_PI;
   double nextHop = -1;
+  bool backUp = false;
 
   for (auto &neighbor: planarNeighbors) {
-    if (pivotId == neighbor.id) continue; // ignore the node where this packet comes from
+    trace() << "Neighbor " << neighbor.id;
+    if (pivotId == neighbor.id) {
+      backUp = true;
+      continue;
+    }
     Point neighborLocation = neighbor.location;
+    trace() << "neighbor " << neighborLocation.x() << " " << neighborLocation.y();
     double bneighbor = G::norm(atan2(selfLocation.y() - neighborLocation.y(), selfLocation.x() - neighborLocation.x()));
+    trace() << "bneighbor " << bneighbor;
     double angle = G::norm(bneighbor - bpivot);
+    trace() << "Angle " << angle;
 
     if (angle < angleMin) {
       angleMin = angle;
@@ -356,12 +384,15 @@ int GpsrRouting::rightHandForward(GpsrPacket* dataPacket, Point pivotLocation, i
     }
   }
 
-  trace() << "Next hop " << nextHop;
+  if (nextHop == -1 && backUp) {
+    nextHop = pivotId; // where this come from
+  }
 
   return nextHop;
 }
 
 vector<NeighborRecord> GpsrRouting::getPlanarNeighbors() {
+  // RNG
   vector<NeighborRecord> planarNeighbors;
 
   for (auto &v: neighborTable) {
@@ -392,6 +423,8 @@ vector<NeighborRecord> GpsrRouting::getPlanarNeighbors() {
 //================================================================
 int GpsrRouting::getNextHopPerimeter(GpsrPacket* dataPacket) {
 
+
+  trace() << "WSN_EVENT DEBUG already in perimeter";
   int nextHop = -1;
   Point startLocation = dataPacket->getPerimeterRoutingStartLocation();
   Point destLocation = dataPacket->getDestLocation();
@@ -400,6 +433,7 @@ int GpsrRouting::getNextHopPerimeter(GpsrPacket* dataPacket) {
     return getNextHopGreedy(dataPacket);
   } else {
     int proposedNextHop = rightHandForward(dataPacket, dataPacket->getPreviousLocation(), dataPacket->getPreviousId());
+    trace() << "WSN_EVENT DEBUG first apply right hand forward, found: " << proposedNextHop;
     if (proposedNextHop != -1) {
       if (self == dataPacket->getCurrentFaceFirstSender() && nextHop == dataPacket->getCurrentFaceFirstReceiver()) {
         return -1; // we're encountering a loop, better drop the packet
@@ -407,12 +441,15 @@ int GpsrRouting::getNextHopPerimeter(GpsrPacket* dataPacket) {
       proposedNextHop = faceChange(dataPacket, proposedNextHop);
     }
 
+    trace() << "WSN_EVENT DEBUG after apply faceChange, got: " << proposedNextHop;
+
     return proposedNextHop;
   }
 }
 
 
 int GpsrRouting::faceChange(GpsrPacket* dataPacket, int proposedNextHop) {
+  trace() << "WSN_EVENT DEBUG apply face change on " << proposedNextHop;
   Point intersection;
   Point proposedLocation = getNeighborLocation(proposedNextHop);
   Point startLocation = dataPacket->getPerimeterRoutingStartLocation();

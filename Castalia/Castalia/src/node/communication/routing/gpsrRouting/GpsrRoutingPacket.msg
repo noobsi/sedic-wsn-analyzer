@@ -21,6 +21,7 @@ enum GpsrPacketDef {
 }; 
 
 packet GpsrPacket extends RoutingPacket {
+    int packetId;
     int GpsrPacketKind enum (GpsrPacketDef);
     int routingMode enum (GpsrForwardingMode);
     int previousId;

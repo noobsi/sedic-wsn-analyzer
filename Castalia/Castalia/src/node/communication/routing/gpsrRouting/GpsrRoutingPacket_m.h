@@ -61,6 +61,7 @@ enum GpsrPacketDef {
  * <pre>
  * packet GpsrPacket extends RoutingPacket
  * {
+ *     int packetId;
  *     int GpsrPacketKind @enum(GpsrPacketDef);
  *     int routingMode @enum(GpsrForwardingMode);
  *     int previousId;
@@ -80,6 +81,7 @@ enum GpsrPacketDef {
 class GpsrPacket : public ::RoutingPacket
 {
   protected:
+    int packetId_var;
     int GpsrPacketKind_var;
     int routingMode_var;
     int previousId_var;
@@ -108,6 +110,8 @@ class GpsrPacket : public ::RoutingPacket
     virtual void parsimUnpack(cCommBuffer *b);
 
     // field getter/setter methods
+    virtual int getPacketId() const;
+    virtual void setPacketId(int packetId);
     virtual int getGpsrPacketKind() const;
     virtual void setGpsrPacketKind(int GpsrPacketKind);
     virtual int getRoutingMode() const;
