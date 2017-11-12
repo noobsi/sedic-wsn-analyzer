@@ -26,11 +26,6 @@
     <input class="custom-switch-input" id="show-edges-option" type="checkbox" checked>
     <label class="custom-switch-btn" for="show-edges-option"></label>
   </div>
-  <label>Planar:</label>
-  <div class="custom-switch">
-    <input class="custom-switch-input" id="planar-option" type="checkbox">
-    <label class="custom-switch-btn" for="planar-option"></label>
-  </div>
 </div>
 <div class="container-fluid">
   <div class="row" id="content">
@@ -102,5 +97,10 @@
     </div>
   </div>
 </div>
+<script>
+  $(function () {
+    $('[data-toggle="tooltip"]').tooltip()
+  })
+</script>
 <script>require('index');</script>
 </body>
