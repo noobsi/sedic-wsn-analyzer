@@ -16,7 +16,7 @@
 
 
 /**
- * Enum generated from <tt>src/node/communication/routing/gpsrRouting/GpsrRoutingControl.msg:16</tt> by nedtool.
+ * Enum generated from <tt>src/node/communication/routing/gpsrRouting/GpsrRoutingControl.msg:2</tt> by nedtool.
  * <pre>
  * enum GpsrRoutingCommandDef
  * {
@@ -34,7 +34,7 @@ enum GpsrRoutingCommandDef {
 };
 
 /**
- * Class generated from <tt>src/node/communication/routing/gpsrRouting/GpsrRoutingControl.msg:22</tt> by nedtool.
+ * Class generated from <tt>src/node/communication/routing/gpsrRouting/GpsrRoutingControl.msg:8</tt> by nedtool.
  * <pre>
  * message GpsrRoutingControlCommand
  * {

@@ -1,21 +1,5 @@
 
 
-/*********************************************************/
-/*  Copyright (c) 2011. University of Pau, France        */
-/*  LIUPPA Laboratory, T2I Team                          */
-/*                                                       */
-/*  Permission to use, copy, modify and distribute this  */
-/*  code, without fee, and without written agreement is  */
-/*  hereby granted, provided that the above copyright    */
-/*  notice and the authors appear in all copies          */
-/*                                                       */
-/*  GREEDY Routing Protocol - only greedy implemented      */
-/*  Version:  1.0                                        */
-/*  Authors: Diop Mamour <serignemamour.diop@gmail.com>  */
-/*           Congduc Pham <congduc.pham@univ-pau.fr>     */
-/*********************************************************/
-
-
 #ifndef _GREEDYROUTING_H_
 #define _GREEDYROUTING_H_
 

@@ -31,9 +31,9 @@ export function generateSigmaNetwork({
         node2coord[nextId] = {x, y};
         nodes.push({
           id: nextId,
-          label: `Node ${nextId} (${x.toFixed(2)}, ${y.toFixed(2)})`,
+          label: `Node ${nextId} (${x.toFixed(2)}, ${(height - y).toFixed(2)})`,
           x: x,
-          y: height - y,
+          y: y,
           size: 1,
           color: '#000'
         });
@@ -48,9 +48,9 @@ export function generateSigmaNetwork({
     node2coord[nextId] = {x, y};
     nodes.push({
       id: nextId,
-      label: `Node ${nextId} (${x.toFixed(2)}, ${y.toFixed(2)})`,
+      label: `Node ${nextId} (${x.toFixed(2)}, ${(height - y).toFixed(2)})`,
       x: x,
-      y: height - y,
+      y: y,
       size: 1,
       color: '#000'
     });

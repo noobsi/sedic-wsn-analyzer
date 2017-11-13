@@ -62,6 +62,44 @@ $('#show-edges-option').change(function () {
   $('#show-edges-option').val(sigmaInstance.showEdges);
 });
 
+let file = null;
+$('#file-input').change(function(){
+  if (this.files.length) {
+    file = this.files[0];
+  }
+});
+
+$('#generate-file-btn').click(function(){
+  let reader = new FileReader();
+  if (file) {
+
+    reader.onload = function(event) {
+      let {nodes} = JSON.parse(event.target.result);
+      nodes = nodes.map(node => {
+        return {
+          x: node.x,
+          y: node.y,
+          id: node.id,
+          label: `Node ${node.id} (${node.x.toFixed(2)}, ${1000 - node.y.toFixed(2)})`,
+        }
+      });
+      if (sigmaInstance) sigmaInstance.kill();
+      sigmaInstance = sigmaNetwork({
+        nodes,
+        edges: normalEdgesFromNodes(nodes, 40),
+        range: 40,
+        width: 1000,
+        container: document.getElementById('graph-container'),
+        height: 1000,
+        onDeleteNodes
+      });
+    };
+
+    reader.readAsText(file);
+  }
+});
+
+
 $('#submit-btn').click(() => {
 
   const traffic = $('#traffic-input').val();
