@@ -18,7 +18,6 @@ Define_Module(SimplePairApplication);
 
 void SimplePairApplication::startup()
 {
-	packet_rate = par("packet_rate");
 	startupDelay = par("startupDelay");
   isSource = par("isSource");
   sinkAddress = par("sink").stringValue();

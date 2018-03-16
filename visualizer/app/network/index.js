@@ -16,7 +16,6 @@ export function generateSigmaNetwork({
   const edges = [];
   const node2coord = {};
 
-  // grid 16 x 16
   let nextId = 0;
   for (let i = 0; i < GRID_HEIGHT; i++) {
     for (let j = 0; j < GRID_WIDTH; j++) {
