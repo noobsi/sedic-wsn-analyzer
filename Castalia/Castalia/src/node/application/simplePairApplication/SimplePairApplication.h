@@ -23,18 +23,16 @@ enum SimplePairApplicationTimers {
 
 class SimplePairApplication: public VirtualApplication {
  private:
-	double packet_rate;
+	double packetRate;
 	double startupDelay;
   bool isSource;
   string sinkAddress;
 
-	float packet_spacing;
 	int dataSN;
 
  protected:
 	void startup();
 	void fromNetworkLayer(ApplicationPacket *, const char *, double, double);
-	void handleRadioControlMessage(RadioControlMessage *);
 	void timerFiredCallback(int);
 };
 

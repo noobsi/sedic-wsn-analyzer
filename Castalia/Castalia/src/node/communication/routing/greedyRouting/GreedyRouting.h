@@ -5,7 +5,6 @@
 
 #include <map>
 #include "VirtualRouting.h"
-#include "GpsrRoutingControl_m.h"
 #include "GreedyRoutingPacket_m.h"
 #include "GeoMathHelper.h"
 
@@ -21,24 +20,6 @@
 
 using namespace std;
 
-struct NeighborRecord {
-  int id;      // the node's ID
-  Point location;
-  double ts;   //the last time stamp of the hello msg from it
-  int timesRx;   
-
-  NeighborRecord() {
-    id = 0;
-    ts = 0.0;
-    timesRx = 0;
-  }
-
-};
-
-struct sink {
-  int id;          // the Sink's ID
-  Point location;
-};
 
 
 enum GreedyRoutingTimers {
@@ -60,12 +41,9 @@ class GreedyRouting: public VirtualRouting {
 
     // GreedyRouting-related member variables
     int self;         // the node's ID
-    Point selfLocation;
-    bool isCoordinateSet; // to know whether the node's position has been set or not
     int totalSNnodes;
     int packetsPerNode;
     bool isSink;		//is a .ned file parameter of the Application module
-    sink mySink; 
     int seqHello;
     vector<NeighborRecord> neighborTable;
     ResourceManager *resourceManager;

@@ -13,6 +13,7 @@
 #include "VirtualRouting.h"
 void VirtualRouting::initialize()
 {
+  GlobalLocationService::initialize(getParentModule()->getParentModule()->getParentModule());
 	maxNetFrameSize = par("maxNetFrameSize");
 	netDataFrameOverhead = par("netDataFrameOverhead");
 	netBufferSize = par("netBufferSize");
@@ -27,6 +28,7 @@ void VirtualRouting::initialize()
 		opp_error("\n Virtual Routing init: Error in geting a valid reference module(s).");
 
 	self = getParentModule()->getParentModule()->getIndex();
+  selfLocation = GlobalLocationService::getLocation(self);
 	// create the routing level address using self
 	stringstream out; out << self; 	selfAddress = out.str();
 

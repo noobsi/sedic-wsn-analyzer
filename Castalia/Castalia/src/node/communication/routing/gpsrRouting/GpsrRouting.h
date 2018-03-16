@@ -5,41 +5,15 @@
 
 #include <map>
 #include "VirtualRouting.h"
-#include "GpsrRoutingControl_m.h"
 #include "GpsrRoutingPacket_m.h"
 #include "GeoMathHelper.h"
+#include "GlobalLocationService.h"
 
 
 #define DEFAULT_GPSR_TIMEOUT   200.0   
-/* the default time out period is 200.0 sec
-   If the hello messge was not received during this period
-   the entry in the neighbor list may be deleted 
-   */
-
-// if something is wrong, will retry sending HELLO message GPSR_RETRY_HELLO_DELAY second later
 #define GPSR_RETRY_HELLO_DELAY 1
 
 using namespace std;
-
-struct NeighborRecord {
-  int id;      // the node's ID
-  Point location;
-  double ts;   //the last time stamp of the hello msg from it
-  int timesRx;   
-
-  NeighborRecord() {
-    id = 0;
-    ts = 0.0;
-    timesRx = 0;
-  }
-
-};
-
-struct sink {
-  int id;          // the Sink's ID
-  Point location;
-};
-
 
 enum GpsrRoutingTimers {
   GPSR_HELLO_MSG_REFRESH_TIMER = 0,
@@ -60,12 +34,8 @@ class GpsrRouting: public VirtualRouting {
 
     // GpsrRouting-related member variables
     int self;         // the node's ID
-    Point selfLocation;
-    bool isCoordinateSet; // to know whether the node's position has been set or not
     int totalSNnodes;
     int packetsPerNode;
-    bool isSink;		//is a .ned file parameter of the Application module
-    sink mySink; 
     int seqHello;
     vector<NeighborRecord> neighborTable;
     ResourceManager *resourceManager;

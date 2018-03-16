@@ -24,6 +24,8 @@
 #include "ResourceManager.h"
 #include "RoutingPacket_m.h"
 #include "ApplicationPacket_m.h"
+#include "GlobalLocationService.h"
+#include "GeoMathHelper.h"
 
 #define SELF_NETWORK_ADDRESS selfAddress.c_str()
 #define ROUTE_DEST_DELIMITER "#"
@@ -42,6 +44,7 @@ class VirtualRouting: public CastaliaModule, public TimerService {
 	/*--- Custom class parameters ---*/
 	double radioDataRate;
 	ResourceManager *resMgrModule;
+	Point selfLocation;
 
 	queue< cPacket* > TXBuffer;
 	vector< list< unsigned int> > pktHistory;

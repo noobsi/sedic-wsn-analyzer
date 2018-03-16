@@ -30,7 +30,7 @@ simple SimplePairApplication like node.application.iApplication {
 											// application-level static routing. This way we can
 											// have a multi-hop throughput test   
 
-	double packet_rate = default (0);	// packets per second, by default we transmit no packets
+	double packetRate = default (0);	// packets per second, by default we transmit no packets
 	double startupDelay = default (0);	// delay in seconds before the app stars producing packets
 
 	double latencyHistogramMax = default (200);
