@@ -57,7 +57,7 @@ void SimplePairApplication::timerFiredCallback(int index) {
 		case SEND_PACKET:{
       // just send once
 			trace() << "Sending packet #" << dataSN;
-			toNetworkLayer(createGenericDataPacket(0, dataSN), par("sink"));
+			toNetworkLayer(createGenericDataPacket(0, dataSN, 100), par("sink"));
 			dataSN++;
 			/* setTimer(SEND_PACKET, packet_spacing); */
 			break;

@@ -33,7 +33,6 @@ class GreedyRouting: public VirtualRouting {
     static int nextId;
     // Parameters
     int GreedySetupFrameOverhead;	// in bytes
-    double netSetupTimeout;
     bool collectTraceInfo;
     int currentSequenceNumber;
     double helloInterval;
@@ -45,7 +44,6 @@ class GreedyRouting: public VirtualRouting {
     int packetsPerNode;
     bool isSink;		//is a .ned file parameter of the Application module
     int seqHello;
-    vector<NeighborRecord> neighborTable;
     ResourceManager *resourceManager;
 
   protected:

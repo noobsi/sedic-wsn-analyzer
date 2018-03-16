@@ -11,8 +11,6 @@
  ****************************************************************************/
 
 #include "ThroughputTest.h"
-// added for GPSR
-#include "GpsrRoutingControl_m.h"
 
 Define_Module(ThroughputTest);
 
@@ -35,13 +33,6 @@ void ThroughputTest::startup()
 
 	trace() << "Node " << self << " has position (" << px << "," << py << ") and recipientAddress " << recipientAddress << endl;
 
-	// set the node's position for the routing layer 
-	GpsrRoutingControlCommand *cmd1 = new GpsrRoutingControlCommand("GPSR set node pos", NETWORK_CONTROL_COMMAND);
-	cmd1->setGpsrRoutingCommandKind(SET_GPSR_NODE_POS);
-	cmd1->setDouble1(px);
-	cmd1->setDouble2(py);
-	toNetworkLayer(cmd1);
-  
 	if (packet_spacing > 0 && recipientAddress.compare(SELF_NETWORK_ADDRESS) != 0) {
 		// added for GPSR
 		// then set the sink's position if the node is sending something
@@ -53,15 +44,7 @@ void ThroughputTest::startup()
 		py = nodeLocation.y;
 	
 		trace() << "Sink for Node " << self << " is " << recipientAddress << " and has position (" << px << "," << py << ")" << endl;
-		
-		GpsrRoutingControlCommand *cmd2 = new GpsrRoutingControlCommand("GPSR set sink pos", NETWORK_CONTROL_COMMAND);
-		cmd2->setGpsrRoutingCommandKind(SET_GPSR_SINK_POS);
-		cmd2->setDouble1(px);
-		cmd2->setDouble2(py);
-		cmd2->setInt1(atoi(recipientAddress.c_str()));
-		toNetworkLayer(cmd2);
-		///
-		
+
 		setTimer(SEND_PACKET, packet_spacing + startupDelay);
 	}
 	else

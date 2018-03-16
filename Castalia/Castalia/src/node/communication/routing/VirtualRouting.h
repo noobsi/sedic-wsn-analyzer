@@ -41,6 +41,7 @@ class VirtualRouting: public CastaliaModule, public TimerService {
 	int netBufferSize;			//in # of messages
 	unsigned int currentSequenceNumber;
 
+  vector<NeighborRecord> neighborTable;
 	/*--- Custom class parameters ---*/
 	double radioDataRate;
 	ResourceManager *resMgrModule;

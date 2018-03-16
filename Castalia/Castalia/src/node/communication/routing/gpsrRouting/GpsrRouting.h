@@ -26,7 +26,6 @@ class GpsrRouting: public VirtualRouting {
     static int nextId;
     // Parameters
     int GpsrSetupFrameOverhead;	// in bytes
-    double netSetupTimeout;
     bool collectTraceInfo;
     int currentSequenceNumber;
     double helloInterval;
@@ -37,7 +36,7 @@ class GpsrRouting: public VirtualRouting {
     int totalSNnodes;
     int packetsPerNode;
     int seqHello;
-    vector<NeighborRecord> neighborTable;
+//    vector<NeighborRecord> neighborTable;
     ResourceManager *resourceManager;
 
   protected:

@@ -13,7 +13,6 @@ void GpsrRouting::startup(){
 	resourceManager = check_and_cast <ResourceManager*>(getParentModule()->getParentModule()->getParentModule()
 	  ->getSubmodule("node", self)->getSubmodule("ResourceManager"));
   helloInterval = (double)par("helloInterval") / 1000.0;
-  neighborTable = GlobalLocationService::getNeighborTable(self);
   seqHello = par("seqHello");
   nextId = 0; // static member
 }
@@ -25,10 +24,10 @@ void GpsrRouting::timerFiredCallback(int index){
 
   switch(index){
 
-    case GPSR_HELLO_MSG_REFRESH_TIMER: 
+    case GPSR_HELLO_MSG_REFRESH_TIMER:
       {
         sendHelloMessage();
-        break;  
+        break;
       }
 
     case GPSR_HELLO_MSG_EXPIRE_TIMER :
