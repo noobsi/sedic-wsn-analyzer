@@ -35,6 +35,7 @@ void GpsrRouting::fromApplicationLayer(cPacket * pkt, const char *destination){
   dataPacket->setSource(SELF_NETWORK_ADDRESS);
   dataPacket->setDestination(destination);
   dataPacket->setRoutingMode(GPSR_GREEDY_ROUTING);
+  dataPacket->setTTL(1000);
 
 
   if (string(destination).compare(BROADCAST_NETWORK_ADDRESS)==0) {
@@ -78,10 +79,8 @@ void GpsrRouting::fromMacLayer(cPacket * pkt, int macAddress, double rssi, doubl
       { 
         string dst(netPacket->getDestination());
         string src(netPacket->getSource());
-
         if ((dst.compare(BROADCAST_NETWORK_ADDRESS) == 0))
           trace() << "Received data from node " << src << " by broadcast";
-
         processDataPacketFromMacLayer(netPacket);
         break;
       }
@@ -97,9 +96,13 @@ void GpsrRouting::finishSpecific() {
 
 void GpsrRouting::processDataPacketFromMacLayer(GpsrPacket* pkt){
 
+  if (pkt->getTTL() == 0) {
+    trace() << "WSN_EVENT DROP packetId:" << pkt->getPacketId() << " source:" << pkt->getSource()
+      << " destination:" << pkt->getDestination() << " current:" << self;
+    return;
+  }
   string dst(pkt->getDestination());
   string src(pkt->getSource());
-
   // if the node is the destination
   if (dst.compare(SELF_NETWORK_ADDRESS) == 0) {
     trace() << "WSN_EVENT RECEIVE packetId:" << pkt->getPacketId() << " source:" << pkt->getSource()
@@ -121,6 +124,7 @@ void GpsrRouting::processDataPacketFromMacLayer(GpsrPacket* pkt){
   GpsrPacket *netPacket = pkt->dup();
   int nextHop = getNextHop(netPacket);
   if (nextHop != -1) {
+    netPacket->setTTL(pkt->getTTL() - 1);
     netPacket->setPreviousLocation(selfLocation);
     netPacket->setPreviousId(self);
 
@@ -147,7 +151,6 @@ int GpsrRouting::getNextHop(GpsrPacket *dataPacket) {
 }
 
 int GpsrRouting::getNextHopGreedy(GpsrPacket* dataPacket){
-
   int nextHop = -1; double dist = 0;
   int tblSize = (int)neighborTable.size();
   Point destLocation = dataPacket->getDestLocation();
@@ -155,7 +158,6 @@ int GpsrRouting::getNextHopGreedy(GpsrPacket* dataPacket){
 
   for (auto &neighbor: neighborTable) {
     dist = G::distance(destLocation, neighbor.location);
-
     if (dist < minDist) {
       minDist = dist;
       nextHop = neighbor.id;

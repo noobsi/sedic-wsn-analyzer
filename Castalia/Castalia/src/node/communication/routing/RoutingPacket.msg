@@ -31,7 +31,8 @@ struct NetMacInfoExchange_type {
 
 packet RoutingPacket {
 	NetMacInfoExchange_type netMacInfoExchange;
-	
+
+	int TTL;
 	string source;
 	string destination;
 	unsigned int sequenceNumber; 

@@ -37,6 +37,7 @@ void doUnpacking(cCommBuffer *b, NetMacInfoExchange_type& a);
  * {
  *     NetMacInfoExchange_type netMacInfoExchange;
  * 
+ *     int TTL;
  *     string source;
  *     string destination;
  *     unsigned int sequenceNumber;
@@ -47,6 +48,7 @@ class RoutingPacket : public ::cPacket
 {
   protected:
     NetMacInfoExchange_type netMacInfoExchange_var;
+    int TTL_var;
     opp_string source_var;
     opp_string destination_var;
     unsigned int sequenceNumber_var;
@@ -71,6 +73,8 @@ class RoutingPacket : public ::cPacket
     virtual NetMacInfoExchange_type& getNetMacInfoExchange();
     virtual const NetMacInfoExchange_type& getNetMacInfoExchange() const {return const_cast<RoutingPacket*>(this)->getNetMacInfoExchange();}
     virtual void setNetMacInfoExchange(const NetMacInfoExchange_type& netMacInfoExchange);
+    virtual int getTTL() const;
+    virtual void setTTL(int TTL);
     virtual const char * getSource() const;
     virtual void setSource(const char * source);
     virtual const char * getDestination() const;

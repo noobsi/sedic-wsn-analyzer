@@ -30,6 +30,7 @@
 #define SELF_NETWORK_ADDRESS selfAddress.c_str()
 #define ROUTE_DEST_DELIMITER "#"
 #define PACKET_HISTORY_SIZE 5
+#define RADIO_RANGE 40
 
 using namespace std;
 

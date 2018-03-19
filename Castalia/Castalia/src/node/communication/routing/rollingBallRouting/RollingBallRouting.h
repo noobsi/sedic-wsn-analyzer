@@ -57,7 +57,10 @@ class RollingBallRouting: public VirtualRouting {
     void processDataPacketFromMacLayer(RollingBallPacket*);
 
     int getNextHopRollingBall(RollingBallPacket*);              // RollingBall forwarding mode
+    int getNextHopGreedy(RollingBallPacket*);              // RollingBall forwarding mode
+    int getNextHop(RollingBallPacket*);              // RollingBall forwarding mode
     Point getNeighborLocation(int);
+    Point nearestCenter(Point pivot, Point next, Point center);
 };
 
 #endif				//ROLLINGBALLROUTINGMODULE

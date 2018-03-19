@@ -69,7 +69,9 @@ function exec({config, sessionId}) {
         writer.write(`SN.node[*].Communication.RoutingProtocolName = "GreedyRouting"\n`)
       } else if (routingAlgorithm.toLowerCase() === 'gpsr') {
         writer.write(`SN.node[*].Communication.RoutingProtocolName = "GpsrRouting"\n`)
-      } else {
+      } else if (routingAlgorithm.toLowerCase() === 'rollingball') {
+        writer.write(`SN.node[*].Communication.RoutingProtocolName = "RollingBallRouting"\n`)
+      } else{
         writer.write(`SN.node[*].Communication.RoutingProtocolName = "GpsrRouting"\n`)
       }
     } else {

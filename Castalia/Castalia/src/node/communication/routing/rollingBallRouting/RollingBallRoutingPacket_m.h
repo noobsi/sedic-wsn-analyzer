@@ -21,7 +21,23 @@
 // }}
 
 /**
- * Enum generated from <tt>src/node/communication/routing/rollingBallRouting/RollingBallRoutingPacket.msg:12</tt> by nedtool.
+ * Enum generated from <tt>src/node/communication/routing/rollingBallRouting/RollingBallRoutingPacket.msg:11</tt> by nedtool.
+ * <pre>
+ * enum RollingBallForwardingMode
+ * {
+ * 
+ *     GREEDY_ROUTING = 0;
+ *     ROLLINGBALL_ROUTING = 1;
+ * }
+ * </pre>
+ */
+enum RollingBallForwardingMode {
+    GREEDY_ROUTING = 0,
+    ROLLINGBALL_ROUTING = 1
+};
+
+/**
+ * Enum generated from <tt>src/node/communication/routing/rollingBallRouting/RollingBallRoutingPacket.msg:16</tt> by nedtool.
  * <pre>
  * enum RollingBallPacketDef
  * {
@@ -35,13 +51,17 @@ enum RollingBallPacketDef {
 };
 
 /**
- * Class generated from <tt>src/node/communication/routing/rollingBallRouting/RollingBallRoutingPacket.msg:16</tt> by nedtool.
+ * Class generated from <tt>src/node/communication/routing/rollingBallRouting/RollingBallRoutingPacket.msg:20</tt> by nedtool.
  * <pre>
  * packet RollingBallPacket extends RoutingPacket
  * {
  *     int packetId;
  *     int RollingBallPacketKind @enum(RollingBallPacketDef);
+ *     int routingMode @enum(RollingBallForwardingMode);
  *     Point destLocation;
+ *     Point stuckLocation;
+ *     Point ballCenter;
+ *     Point previousLocation;
  * }
  * </pre>
  */
@@ -50,7 +70,11 @@ class RollingBallPacket : public ::RoutingPacket
   protected:
     int packetId_var;
     int RollingBallPacketKind_var;
+    int routingMode_var;
     Point destLocation_var;
+    Point stuckLocation_var;
+    Point ballCenter_var;
+    Point previousLocation_var;
 
   private:
     void copy(const RollingBallPacket& other);
@@ -73,9 +97,20 @@ class RollingBallPacket : public ::RoutingPacket
     virtual void setPacketId(int packetId);
     virtual int getRollingBallPacketKind() const;
     virtual void setRollingBallPacketKind(int RollingBallPacketKind);
+    virtual int getRoutingMode() const;
+    virtual void setRoutingMode(int routingMode);
     virtual Point& getDestLocation();
     virtual const Point& getDestLocation() const {return const_cast<RollingBallPacket*>(this)->getDestLocation();}
     virtual void setDestLocation(const Point& destLocation);
+    virtual Point& getStuckLocation();
+    virtual const Point& getStuckLocation() const {return const_cast<RollingBallPacket*>(this)->getStuckLocation();}
+    virtual void setStuckLocation(const Point& stuckLocation);
+    virtual Point& getBallCenter();
+    virtual const Point& getBallCenter() const {return const_cast<RollingBallPacket*>(this)->getBallCenter();}
+    virtual void setBallCenter(const Point& ballCenter);
+    virtual Point& getPreviousLocation();
+    virtual const Point& getPreviousLocation() const {return const_cast<RollingBallPacket*>(this)->getPreviousLocation();}
+    virtual void setPreviousLocation(const Point& previousLocation);
 };
 
 inline void doPacking(cCommBuffer *b, RollingBallPacket& obj) {obj.parsimPack(b);}

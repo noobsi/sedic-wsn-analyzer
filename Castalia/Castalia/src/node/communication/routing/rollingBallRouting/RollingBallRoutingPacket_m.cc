@@ -54,6 +54,13 @@ template<typename T>
 inline std::ostream& operator<<(std::ostream& out,const T&) {return out;}
 
 EXECUTE_ON_STARTUP(
+    cEnum *e = cEnum::find("RollingBallForwardingMode");
+    if (!e) enums.getInstance()->add(e = new cEnum("RollingBallForwardingMode"));
+    e->insert(GREEDY_ROUTING, "GREEDY_ROUTING");
+    e->insert(ROLLINGBALL_ROUTING, "ROLLINGBALL_ROUTING");
+);
+
+EXECUTE_ON_STARTUP(
     cEnum *e = cEnum::find("RollingBallPacketDef");
     if (!e) enums.getInstance()->add(e = new cEnum("RollingBallPacketDef"));
     e->insert(ROLLINGBALL_DATA_PACKET, "ROLLINGBALL_DATA_PACKET");
@@ -65,6 +72,7 @@ RollingBallPacket::RollingBallPacket(const char *name, int kind) : ::RoutingPack
 {
     this->packetId_var = 0;
     this->RollingBallPacketKind_var = 0;
+    this->routingMode_var = 0;
 }
 
 RollingBallPacket::RollingBallPacket(const RollingBallPacket& other) : ::RoutingPacket(other)
@@ -88,7 +96,11 @@ void RollingBallPacket::copy(const RollingBallPacket& other)
 {
     this->packetId_var = other.packetId_var;
     this->RollingBallPacketKind_var = other.RollingBallPacketKind_var;
+    this->routingMode_var = other.routingMode_var;
     this->destLocation_var = other.destLocation_var;
+    this->stuckLocation_var = other.stuckLocation_var;
+    this->ballCenter_var = other.ballCenter_var;
+    this->previousLocation_var = other.previousLocation_var;
 }
 
 void RollingBallPacket::parsimPack(cCommBuffer *b)
@@ -96,7 +108,11 @@ void RollingBallPacket::parsimPack(cCommBuffer *b)
     ::RoutingPacket::parsimPack(b);
     doPacking(b,this->packetId_var);
     doPacking(b,this->RollingBallPacketKind_var);
+    doPacking(b,this->routingMode_var);
     doPacking(b,this->destLocation_var);
+    doPacking(b,this->stuckLocation_var);
+    doPacking(b,this->ballCenter_var);
+    doPacking(b,this->previousLocation_var);
 }
 
 void RollingBallPacket::parsimUnpack(cCommBuffer *b)
@@ -104,7 +120,11 @@ void RollingBallPacket::parsimUnpack(cCommBuffer *b)
     ::RoutingPacket::parsimUnpack(b);
     doUnpacking(b,this->packetId_var);
     doUnpacking(b,this->RollingBallPacketKind_var);
+    doUnpacking(b,this->routingMode_var);
     doUnpacking(b,this->destLocation_var);
+    doUnpacking(b,this->stuckLocation_var);
+    doUnpacking(b,this->ballCenter_var);
+    doUnpacking(b,this->previousLocation_var);
 }
 
 int RollingBallPacket::getPacketId() const
@@ -127,6 +147,16 @@ void RollingBallPacket::setRollingBallPacketKind(int RollingBallPacketKind)
     this->RollingBallPacketKind_var = RollingBallPacketKind;
 }
 
+int RollingBallPacket::getRoutingMode() const
+{
+    return routingMode_var;
+}
+
+void RollingBallPacket::setRoutingMode(int routingMode)
+{
+    this->routingMode_var = routingMode;
+}
+
 Point& RollingBallPacket::getDestLocation()
 {
     return destLocation_var;
@@ -135,6 +165,36 @@ Point& RollingBallPacket::getDestLocation()
 void RollingBallPacket::setDestLocation(const Point& destLocation)
 {
     this->destLocation_var = destLocation;
+}
+
+Point& RollingBallPacket::getStuckLocation()
+{
+    return stuckLocation_var;
+}
+
+void RollingBallPacket::setStuckLocation(const Point& stuckLocation)
+{
+    this->stuckLocation_var = stuckLocation;
+}
+
+Point& RollingBallPacket::getBallCenter()
+{
+    return ballCenter_var;
+}
+
+void RollingBallPacket::setBallCenter(const Point& ballCenter)
+{
+    this->ballCenter_var = ballCenter;
+}
+
+Point& RollingBallPacket::getPreviousLocation()
+{
+    return previousLocation_var;
+}
+
+void RollingBallPacket::setPreviousLocation(const Point& previousLocation)
+{
+    this->previousLocation_var = previousLocation;
 }
 
 class RollingBallPacketDescriptor : public cClassDescriptor
@@ -184,7 +244,7 @@ const char *RollingBallPacketDescriptor::getProperty(const char *propertyname) c
 int RollingBallPacketDescriptor::getFieldCount(void *object) const
 {
     cClassDescriptor *basedesc = getBaseClassDescriptor();
-    return basedesc ? 3+basedesc->getFieldCount(object) : 3;
+    return basedesc ? 7+basedesc->getFieldCount(object) : 7;
 }
 
 unsigned int RollingBallPacketDescriptor::getFieldTypeFlags(void *object, int field) const
@@ -198,9 +258,13 @@ unsigned int RollingBallPacketDescriptor::getFieldTypeFlags(void *object, int fi
     static unsigned int fieldTypeFlags[] = {
         FD_ISEDITABLE,
         FD_ISEDITABLE,
+        FD_ISEDITABLE,
+        FD_ISCOMPOUND,
+        FD_ISCOMPOUND,
+        FD_ISCOMPOUND,
         FD_ISCOMPOUND,
     };
-    return (field>=0 && field<3) ? fieldTypeFlags[field] : 0;
+    return (field>=0 && field<7) ? fieldTypeFlags[field] : 0;
 }
 
 const char *RollingBallPacketDescriptor::getFieldName(void *object, int field) const
@@ -214,9 +278,13 @@ const char *RollingBallPacketDescriptor::getFieldName(void *object, int field) c
     static const char *fieldNames[] = {
         "packetId",
         "RollingBallPacketKind",
+        "routingMode",
         "destLocation",
+        "stuckLocation",
+        "ballCenter",
+        "previousLocation",
     };
-    return (field>=0 && field<3) ? fieldNames[field] : NULL;
+    return (field>=0 && field<7) ? fieldNames[field] : NULL;
 }
 
 int RollingBallPacketDescriptor::findField(void *object, const char *fieldName) const
@@ -225,7 +293,11 @@ int RollingBallPacketDescriptor::findField(void *object, const char *fieldName) 
     int base = basedesc ? basedesc->getFieldCount(object) : 0;
     if (fieldName[0]=='p' && strcmp(fieldName, "packetId")==0) return base+0;
     if (fieldName[0]=='R' && strcmp(fieldName, "RollingBallPacketKind")==0) return base+1;
-    if (fieldName[0]=='d' && strcmp(fieldName, "destLocation")==0) return base+2;
+    if (fieldName[0]=='r' && strcmp(fieldName, "routingMode")==0) return base+2;
+    if (fieldName[0]=='d' && strcmp(fieldName, "destLocation")==0) return base+3;
+    if (fieldName[0]=='s' && strcmp(fieldName, "stuckLocation")==0) return base+4;
+    if (fieldName[0]=='b' && strcmp(fieldName, "ballCenter")==0) return base+5;
+    if (fieldName[0]=='p' && strcmp(fieldName, "previousLocation")==0) return base+6;
     return basedesc ? basedesc->findField(object, fieldName) : -1;
 }
 
@@ -240,9 +312,13 @@ const char *RollingBallPacketDescriptor::getFieldTypeString(void *object, int fi
     static const char *fieldTypeStrings[] = {
         "int",
         "int",
+        "int",
+        "Point",
+        "Point",
+        "Point",
         "Point",
     };
-    return (field>=0 && field<3) ? fieldTypeStrings[field] : NULL;
+    return (field>=0 && field<7) ? fieldTypeStrings[field] : NULL;
 }
 
 const char *RollingBallPacketDescriptor::getFieldProperty(void *object, int field, const char *propertyname) const
@@ -256,6 +332,9 @@ const char *RollingBallPacketDescriptor::getFieldProperty(void *object, int fiel
     switch (field) {
         case 1:
             if (!strcmp(propertyname,"enum")) return "RollingBallPacketDef";
+            return NULL;
+        case 2:
+            if (!strcmp(propertyname,"enum")) return "RollingBallForwardingMode";
             return NULL;
         default: return NULL;
     }
@@ -287,7 +366,11 @@ std::string RollingBallPacketDescriptor::getFieldAsString(void *object, int fiel
     switch (field) {
         case 0: return long2string(pp->getPacketId());
         case 1: return long2string(pp->getRollingBallPacketKind());
-        case 2: {std::stringstream out; out << pp->getDestLocation(); return out.str();}
+        case 2: return long2string(pp->getRoutingMode());
+        case 3: {std::stringstream out; out << pp->getDestLocation(); return out.str();}
+        case 4: {std::stringstream out; out << pp->getStuckLocation(); return out.str();}
+        case 5: {std::stringstream out; out << pp->getBallCenter(); return out.str();}
+        case 6: {std::stringstream out; out << pp->getPreviousLocation(); return out.str();}
         default: return "";
     }
 }
@@ -304,6 +387,7 @@ bool RollingBallPacketDescriptor::setFieldAsString(void *object, int field, int 
     switch (field) {
         case 0: pp->setPacketId(string2long(value)); return true;
         case 1: pp->setRollingBallPacketKind(string2long(value)); return true;
+        case 2: pp->setRoutingMode(string2long(value)); return true;
         default: return false;
     }
 }
@@ -317,7 +401,10 @@ const char *RollingBallPacketDescriptor::getFieldStructName(void *object, int fi
         field -= basedesc->getFieldCount(object);
     }
     switch (field) {
-        case 2: return opp_typename(typeid(Point));
+        case 3: return opp_typename(typeid(Point));
+        case 4: return opp_typename(typeid(Point));
+        case 5: return opp_typename(typeid(Point));
+        case 6: return opp_typename(typeid(Point));
         default: return NULL;
     };
 }
@@ -332,7 +419,10 @@ void *RollingBallPacketDescriptor::getFieldStructPointer(void *object, int field
     }
     RollingBallPacket *pp = (RollingBallPacket *)object; (void)pp;
     switch (field) {
-        case 2: return (void *)(&pp->getDestLocation()); break;
+        case 3: return (void *)(&pp->getDestLocation()); break;
+        case 4: return (void *)(&pp->getStuckLocation()); break;
+        case 5: return (void *)(&pp->getBallCenter()); break;
+        case 6: return (void *)(&pp->getPreviousLocation()); break;
         default: return NULL;
     }
 }

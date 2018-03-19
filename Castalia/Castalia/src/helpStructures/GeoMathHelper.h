@@ -12,6 +12,7 @@
 #define in_range(x,a,y) ((x) <= (a) && (a) <= (y)) || ((x) >= (a) && (a) >= (y))
 
 #define EPSILON 0.000001
+#define INVALID -10000
 
 #ifndef NaN
 #define NaN std::numeric_limits<double>::quiet_NaN()
@@ -21,8 +22,8 @@ class G;
 
 struct Point {
   Point() {
-    x_ = -1;
-    y_ = -1;
+    x_ = INVALID;
+    y_ = INVALID;
   }
 
   Point(double x, double y) {
@@ -35,7 +36,7 @@ struct Point {
   }
 
   bool isUnspecified() {
-    return x_ == -1;
+    return x_ == INVALID;
   }
 
   inline double y() const {
@@ -98,6 +99,7 @@ class G {
     static bool intersection(Point p1, Point p2, Point p3, Point p4, Point& p) {
       return intersection(&p1, &p2, &p3, &p4, p);
     };
+    static void centers(Point p1, Point p2, double radius, Point &center1, Point &center2);
 };
 
 

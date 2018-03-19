@@ -32,6 +32,7 @@ void RollingBallRouting::fromApplicationLayer(cPacket * pkt, const char *destina
   dataPacket->setRollingBallPacketKind(ROLLINGBALL_DATA_PACKET);
   dataPacket->setSource(SELF_NETWORK_ADDRESS);
   dataPacket->setDestination(destination);
+  dataPacket->setRoutingMode(GREEDY_ROUTING);
 
 
   if (string(destination).compare(BROADCAST_NETWORK_ADDRESS)==0) {
@@ -39,11 +40,9 @@ void RollingBallRouting::fromApplicationLayer(cPacket * pkt, const char *destina
     return;
   }
 
-
   dataPacket->setDestLocation(GlobalLocationService::getLocation(atoi(destination)));
   dataPacket->setPacketId(nextId++);
-
-  int nextHop = getNextHopRollingBall(dataPacket);
+  int nextHop = getNextHop(dataPacket);
   if (nextHop != -1) {
     trace() << "WSN_EVENT SEND packetId:" << dataPacket->getPacketId() << " source:" << dataPacket->getSource()
       << " destination:" << dataPacket->getDestination() << " current:" << self;
@@ -67,10 +66,8 @@ void RollingBallRouting::fromMacLayer(cPacket * pkt, int macAddress, double rssi
   switch (netPacket->getRollingBallPacketKind()) {
     case ROLLINGBALL_DATA_PACKET:
       { 
-
         string dst(netPacket->getDestination());
         string src(netPacket->getSource());
-
         if ((dst.compare(BROADCAST_NETWORK_ADDRESS) == 0))
           trace() << "Received data from node " << src << " by broadcast";
         processDataPacketFromMacLayer(netPacket);
@@ -123,7 +120,7 @@ void RollingBallRouting::processDataPacketFromMacLayer(RollingBallPacket* pkt){
   }
 }
 
-int RollingBallRouting::getNextHopRollingBall(RollingBallPacket* dataPacket){
+int RollingBallRouting::getNextHopGreedy(RollingBallPacket* dataPacket){
   int nextHop = -1; double dist = 0;
   int tblSize = (int)neighborTable.size();
   Point destLocation = dataPacket->getDestLocation();
@@ -138,7 +135,78 @@ int RollingBallRouting::getNextHopRollingBall(RollingBallPacket* dataPacket){
     }
   }
 
-  return nextHop;
+  if (nextHop != -1) {
+    return nextHop;
+  } else {
+    dataPacket->setRoutingMode(ROLLINGBALL_ROUTING);
+    dataPacket->setStuckLocation(selfLocation);
+
+    // compute first ball with radius = RADIO_RANGE/2
+    double x1 = selfLocation.x(), y1 = selfLocation.y();
+    double x2 = destLocation.x(), y2 = destLocation.y();
+    double d = G::distance(selfLocation, destLocation);
+    double centerX = x1 + (x2 - x1) * RADIO_RANGE / 2 / d;
+    double centerY = y1 + (y2 - y1) * RADIO_RANGE / 2 / d;
+
+    // set ball radius
+    dataPacket->setBallCenter(Point(centerX, centerY));
+    return getNextHopRollingBall(dataPacket);
+  }
+
+}
+
+int RollingBallRouting::getNextHop(RollingBallPacket* dataPacket){
+  switch (dataPacket->getRoutingMode()) {
+    case GREEDY_ROUTING: return getNextHopGreedy(dataPacket);
+    case ROLLINGBALL_ROUTING: return getNextHopRollingBall(dataPacket);
+    default: throw cRuntimeError("Unkown routing mode");
+  }
+}
+
+int RollingBallRouting::getNextHopRollingBall(RollingBallPacket* dataPacket){
+  Point stuckLocation = dataPacket->getStuckLocation();
+  Point destLocation = dataPacket->getDestLocation();
+  if (G::distance(selfLocation, destLocation) < G::distance(stuckLocation, destLocation)) {
+    dataPacket->setRoutingMode(GREEDY_ROUTING);
+    return getNextHopGreedy(dataPacket);
+  } else {
+    int nextHop = -1;
+    Point nextCenter;
+    Point ballCenter = dataPacket->getBallCenter();
+     // respect to current node
+    double ballCenterAngle = G::norm(atan2(ballCenter.y() - selfLocation.y(), ballCenter.x() - selfLocation.x()));
+    double minAngle = 3 * M_PI;
+    for (auto &n: neighborTable) {
+      Point candidateCenter = nearestCenter(selfLocation, n.location, dataPacket->getBallCenter());
+      double candidateAngle = G::norm(atan2(candidateCenter.y() - selfLocation.y(), candidateCenter.x() - selfLocation.x()));
+      if (G::norm(candidateAngle - ballCenterAngle) < minAngle) {
+        minAngle = G::norm(candidateAngle - ballCenterAngle);
+        nextHop = n.id;
+        nextCenter = candidateCenter;
+      }
+    }
+
+    if (nextHop != -1) {
+      dataPacket->setBallCenter(nextCenter);
+    }
+
+    return nextHop;
+  }
+}
+
+Point RollingBallRouting::nearestCenter(Point pivot, Point next, Point center) {
+  Point center1, center2;
+  G::centers(pivot, next, RADIO_RANGE / 2, center1, center2);
+
+  double pivotAngle = G::norm(atan2(pivot.y() - center1.y(), pivot.x() - center1.x()));
+  double nextAngle = G::norm(atan2(next.y() - center1.y(), next.x() - center1.x()));
+  double diffCCWAngle = G::norm(pivotAngle - nextAngle);
+
+  if (diffCCWAngle < M_PI) {
+    return center1;
+  } else {
+    return center2;
+  }
 }
 
 

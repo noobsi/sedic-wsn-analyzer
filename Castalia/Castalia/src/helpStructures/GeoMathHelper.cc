@@ -65,3 +65,22 @@ bool G::intersection(double a1, double b1, double c1, double a2, double b2,
 
     return true;
 }
+
+// find center of the circle with radius on which two points are located
+void G::centers(Point p1, Point p2, double r, Point &center1, Point &center2) {
+  double x1 = p1.x(), y1 = p1.y();
+  double x2 = p2.x(), y2 = p2.y();
+  double x3 = (x1 + x2) / 2;
+  double y3 = (y1 + y2) / 2;
+  double q = distance(p1, p2);
+
+  center1 = Point(
+    x3 + sqrt(r * r - (q / 2) * (q / 2)) * (y1 - y2) / q,
+    y3 + sqrt(r * r - (q / 2) * (q / 2)) * (x2 - x1) / q
+  );
+
+  center2 = Point(
+    x3 - sqrt(r * r - (q / 2) * (q / 2)) * (y1 - y2) / q,
+    y3 - sqrt(r * r - (q / 2) * (q / 2)) * (x2 - x1) / q
+  );
+}
