@@ -1,34 +1,35 @@
-#include "GreedyRouting.h"
+#include "RollingBallRouting.h"
 
-Define_Module(GreedyRouting);
+Define_Module(RollingBallRouting);
 
-int GreedyRouting::nextId;
+int RollingBallRouting::nextId;
 
-void GreedyRouting::startup(){
+void RollingBallRouting::startup(){
   seqHello = par("seqHello");
   nextId = 0; // static member
 }
 
-void GreedyRouting::timerFiredCallback(int index){
+void RollingBallRouting::timerFiredCallback(int index){
 
   switch(index){
     default: break;
   }
 }
 
-void GreedyRouting::processBufferedPacket(){
+
+void RollingBallRouting::processBufferedPacket(){
   while (!TXBuffer.empty()) {
     toMacLayer(TXBuffer.front(), BROADCAST_MAC_ADDRESS);
     TXBuffer.pop();
   }
 }
 
-void GreedyRouting::fromApplicationLayer(cPacket * pkt, const char *destination){
+void RollingBallRouting::fromApplicationLayer(cPacket * pkt, const char *destination){
 
-  GreedyPacket *dataPacket = new GreedyPacket("GREEDY routing data packet", NETWORK_LAYER_PACKET);
+  RollingBallPacket *dataPacket = new RollingBallPacket("ROLLING_BALL routing data packet", NETWORK_LAYER_PACKET);
 
   encapsulatePacket(dataPacket, pkt);
-  dataPacket->setGreedyPacketKind(GREEDY_DATA_PACKET);
+  dataPacket->setRollingBallPacketKind(ROLLINGBALL_DATA_PACKET);
   dataPacket->setSource(SELF_NETWORK_ADDRESS);
   dataPacket->setDestination(destination);
 
@@ -42,7 +43,7 @@ void GreedyRouting::fromApplicationLayer(cPacket * pkt, const char *destination)
   dataPacket->setDestLocation(GlobalLocationService::getLocation(atoi(destination)));
   dataPacket->setPacketId(nextId++);
 
-  int nextHop = getNextHopGreedy(dataPacket);
+  int nextHop = getNextHopRollingBall(dataPacket);
   if (nextHop != -1) {
     trace() << "WSN_EVENT SEND packetId:" << dataPacket->getPacketId() << " source:" << dataPacket->getSource()
       << " destination:" << dataPacket->getDestination() << " current:" << self;
@@ -58,16 +59,18 @@ void GreedyRouting::fromApplicationLayer(cPacket * pkt, const char *destination)
 
 
 
-void GreedyRouting::fromMacLayer(cPacket * pkt, int macAddress, double rssi, double lqi){
-  GreedyPacket *netPacket = dynamic_cast <GreedyPacket*>(pkt);
+void RollingBallRouting::fromMacLayer(cPacket * pkt, int macAddress, double rssi, double lqi){
+  RollingBallPacket *netPacket = dynamic_cast <RollingBallPacket*>(pkt);
   if (!netPacket)
     return;
 
-  switch (netPacket->getGreedyPacketKind()) {
-    case GREEDY_DATA_PACKET:
+  switch (netPacket->getRollingBallPacketKind()) {
+    case ROLLINGBALL_DATA_PACKET:
       { 
+
         string dst(netPacket->getDestination());
         string src(netPacket->getSource());
+
         if ((dst.compare(BROADCAST_NETWORK_ADDRESS) == 0))
           trace() << "Received data from node " << src << " by broadcast";
         processDataPacketFromMacLayer(netPacket);
@@ -78,12 +81,11 @@ void GreedyRouting::fromMacLayer(cPacket * pkt, int macAddress, double rssi, dou
   }
 }
 
-void GreedyRouting::finishSpecific() {
+void RollingBallRouting::finishSpecific() {
   trace() << "WSN_EVENT FINAL" << " id:" << self << " x:" << selfLocation.x() << " y:" << selfLocation.y() << " deathTime:-1";
 }
 
-void GreedyRouting::processDataPacketFromMacLayer(GreedyPacket* pkt){
-
+void RollingBallRouting::processDataPacketFromMacLayer(RollingBallPacket* pkt){
   string dst(pkt->getDestination());
   string src(pkt->getSource());
 
@@ -105,8 +107,8 @@ void GreedyRouting::processDataPacketFromMacLayer(GreedyPacket* pkt){
 
 
   // duplicate the packet because we are going to forward it
-  GreedyPacket *netPacket = pkt->dup();
-  int nextHop = getNextHopGreedy(netPacket);
+  RollingBallPacket *netPacket = pkt->dup();
+  int nextHop = getNextHopRollingBall(netPacket);
   if (nextHop != -1) {
     trace() << "WSN_EVENT FORWARD packetId:" << pkt->getPacketId() << " source:" << pkt->getSource()
       << " destination:" << pkt->getDestination() << " current:" << self;
@@ -121,7 +123,7 @@ void GreedyRouting::processDataPacketFromMacLayer(GreedyPacket* pkt){
   }
 }
 
-int GreedyRouting::getNextHopGreedy(GreedyPacket* dataPacket){
+int RollingBallRouting::getNextHopRollingBall(RollingBallPacket* dataPacket){
   int nextHop = -1; double dist = 0;
   int tblSize = (int)neighborTable.size();
   Point destLocation = dataPacket->getDestLocation();
@@ -140,7 +142,7 @@ int GreedyRouting::getNextHopGreedy(GreedyPacket* dataPacket){
 }
 
 
-Point GreedyRouting::getNeighborLocation(int id) {
+Point RollingBallRouting::getNeighborLocation(int id) {
   for (auto &n: neighborTable) {
     if (n.id == id) {
       return n.location;
@@ -151,5 +153,5 @@ Point GreedyRouting::getNeighborLocation(int id) {
 }
 // will handle interaction between the application layer and the GPRS module in order to pass parameters such as
 // the node's position
-void GreedyRouting::handleNetworkControlCommand(cMessage *msg) {
+void RollingBallRouting::handleNetworkControlCommand(cMessage *msg) {
 }

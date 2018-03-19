@@ -16,8 +16,6 @@
 using namespace std;
 
 enum GpsrRoutingTimers {
-  GPSR_HELLO_MSG_REFRESH_TIMER = 0,
-  GPSR_HELLO_MSG_EXPIRE_TIMER  = 1,
 };
 
 class GpsrRouting: public VirtualRouting {
@@ -32,12 +30,9 @@ class GpsrRouting: public VirtualRouting {
     double activeRouteTimeout; //in s
 
     // GpsrRouting-related member variables
-    int self;         // the node's ID
     int totalSNnodes;
     int packetsPerNode;
     int seqHello;
-//    vector<NeighborRecord> neighborTable;
-    ResourceManager *resourceManager;
 
   protected:
 
@@ -50,10 +45,8 @@ class GpsrRouting: public VirtualRouting {
     void timerFiredCallback(int);
     void processBufferedPacket();
 
-    void sendHelloMessage();
     void processDataPacketFromMacLayer(GpsrPacket*);
 
-    void updateNeighborTable(int, int, Point); // add a possible new neighbor
     int getNextHop(GpsrPacket*);
     int getNextHopGreedy(GpsrPacket*);              // Greedy forwarding mode
     int getNextHopPerimeter(GpsrPacket*);          // Perimeter mode

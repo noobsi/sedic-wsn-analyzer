@@ -5,43 +5,17 @@ Define_Module(GpsrRouting);
 
 int GpsrRouting::nextId;
 
-//================================================================
-//    startup
-//================================================================
 void GpsrRouting::startup(){
-  self = getParentModule()->getParentModule()->getIndex();
-	resourceManager = check_and_cast <ResourceManager*>(getParentModule()->getParentModule()->getParentModule()
-	  ->getSubmodule("node", self)->getSubmodule("ResourceManager"));
-  helloInterval = (double)par("helloInterval") / 1000.0;
-  seqHello = par("seqHello");
   nextId = 0; // static member
 }
 
-//================================================================
-//    timerFiredCallback
-//================================================================
 void GpsrRouting::timerFiredCallback(int index){
 
   switch(index){
-
-    case GPSR_HELLO_MSG_REFRESH_TIMER:
-      {
-        sendHelloMessage();
-        break;
-      }
-
-    case GPSR_HELLO_MSG_EXPIRE_TIMER :
-      {
-        break;
-      }
-
     default: break;
   }
 }
 
-//================================================================
-//    processBufferedPacket
-//================================================================
 
 void GpsrRouting::processBufferedPacket(){
   while (!TXBuffer.empty()) {
@@ -50,10 +24,7 @@ void GpsrRouting::processBufferedPacket(){
   }
 }
 
-//================================================================
-//    fromApplicationLayer
-//================================================================
-void GpsrRouting::fromApplicationLayer(cPacket * pkt, const char *destination){  
+void GpsrRouting::fromApplicationLayer(cPacket * pkt, const char *destination){
 
   GpsrPacket *dataPacket = new GpsrPacket("GPSR routing data packet", NETWORK_LAYER_PACKET);
 
@@ -68,8 +39,6 @@ void GpsrRouting::fromApplicationLayer(cPacket * pkt, const char *destination){
 
   if (string(destination).compare(BROADCAST_NETWORK_ADDRESS)==0) {
     toMacLayer(dataPacket, BROADCAST_MAC_ADDRESS);
-    collectOutput("GPSR Packets received", "DATA from Application (broadcast)");
-    collectOutput("GPSR Packets sent", "DATA (broadcast)");
     return;
   }
 
@@ -85,10 +54,8 @@ void GpsrRouting::fromApplicationLayer(cPacket * pkt, const char *destination){
     dataPacket->setPreviousId(self); // no previous node
     trace() << "WSN_EVENT SEND packetId:" << dataPacket->getPacketId() << " source:" << dataPacket->getSource()
       << " destination:" << dataPacket->getDestination() << " current:" << self;
-    trace() << "WSN_EVENT ENERGY id:" << self << " energy:" << resourceManager->getRemainingEnergy();
+    trace() << "WSN_EVENT ENERGY id:" << self << " energy:" << resMgrModule->getRemainingEnergy();
     toMacLayer(dataPacket, nextHop);
-    collectOutput("GPSR Packets received", "DATA from Application (unicast,greedy)");
-    collectOutput("GPSR Packets sent", "DATA (unicast,greedy)");
     return;
   }
   else {
@@ -98,10 +65,6 @@ void GpsrRouting::fromApplicationLayer(cPacket * pkt, const char *destination){
 }
 
 
-
-//================================================================
-//    fromMacLayer
-//================================================================
 void GpsrRouting::fromMacLayer(cPacket * pkt, int macAddress, double rssi, double lqi){
 
   GpsrPacket *netPacket = dynamic_cast <GpsrPacket*>(pkt);
@@ -113,9 +76,6 @@ void GpsrRouting::fromMacLayer(cPacket * pkt, int macAddress, double rssi, doubl
       // process data packet
     case GPSR_DATA_PACKET:
       { 
-
-        collectOutput("GPSR Packets received", "DATA from MAC");
-
         string dst(netPacket->getDestination());
         string src(netPacket->getSource());
 
@@ -130,22 +90,11 @@ void GpsrRouting::fromMacLayer(cPacket * pkt, int macAddress, double rssi, doubl
   }
 }
 
-//================================================================
-//    finishSpecific
-//================================================================
 void GpsrRouting::finishSpecific() {
   trace() << "WSN_EVENT FINAL" << " id:" << self << " x:" << selfLocation.x() << " y:" << selfLocation.y() << " deathTime:-1";
 }
 
-//================================================================
-//    sendHelloMsg
-//================================================================
-void GpsrRouting::sendHelloMessage(){
-}
 
-//================================================================
-//    processDataPacket
-//================================================================
 void GpsrRouting::processDataPacketFromMacLayer(GpsrPacket* pkt){
 
   string dst(pkt->getDestination());
@@ -155,11 +104,7 @@ void GpsrRouting::processDataPacketFromMacLayer(GpsrPacket* pkt){
   if (dst.compare(SELF_NETWORK_ADDRESS) == 0) {
     trace() << "WSN_EVENT RECEIVE packetId:" << pkt->getPacketId() << " source:" << pkt->getSource()
       << " destination:" << pkt->getDestination() << " current:" << self;
-    trace() << "WSN_EVENT ENERGY id:" << self << " energy:" << resourceManager->getRemainingEnergy();
-    collectOutput("GPSR Packets received", "final from MAC");
-#ifdef DEBUG_OUTPUT_LEVEL2		
-    collectOutput("GPSR Packets received", atoi(src.c_str()), "final from MAC");
-#endif		
+    trace() << "WSN_EVENT ENERGY id:" << self << " energy:" << resMgrModule->getRemainingEnergy();
     toApplicationLayer(pkt->decapsulate());
     return;
   } 
@@ -167,10 +112,6 @@ void GpsrRouting::processDataPacketFromMacLayer(GpsrPacket* pkt){
   // if the node is the destination by broadcast, we do not forward it
   if ((dst.compare(BROADCAST_NETWORK_ADDRESS) == 0)) {
     trace() << "Received data (routing broadcast) from MAC, send data to application layer. Source node: " << src;
-    collectOutput("GPSR Packets received", "broadcast from MAC");
-#ifdef DEBUG_OUTPUT_LEVEL2
-    collectOutput("GPSR Packets received", atoi(src.c_str()), "broadcast from MAC");
-#endif
     toApplicationLayer(pkt->decapsulate());
     return;
   }
@@ -185,10 +126,8 @@ void GpsrRouting::processDataPacketFromMacLayer(GpsrPacket* pkt){
 
     trace() << "WSN_EVENT FORWARD packetId:" << pkt->getPacketId() << " source:" << pkt->getSource()
       << " destination:" << pkt->getDestination() << " current:" << self;
-    trace() << "WSN_EVENT ENERGY id:" << self << " energy:" << resourceManager->getRemainingEnergy();
+    trace() << "WSN_EVENT ENERGY id:" << self << " energy:" << resMgrModule->getRemainingEnergy();
     toMacLayer(netPacket, nextHop);
-    collectOutput("GPSR Packets received", "DATA from Application (unicast,greedy)");
-    collectOutput("GPSR Packets sent", "DATA (unicast,greedy)");
     return;
   }
   else {
@@ -196,33 +135,6 @@ void GpsrRouting::processDataPacketFromMacLayer(GpsrPacket* pkt){
       << " destination:" << pkt->getDestination() << " current:" << self;
     delete netPacket;
   }
-}
-
-//================================================================
-//    updateNeighborTable
-//================================================================
-void GpsrRouting::updateNeighborTable(int nodeID, int theSN, Point nodeLocation) {
-
-  int pos = -1;
-  int tblSize = (int) neighborTable.size();
-
-  for (int i = 0; i < tblSize; i++)
-    if (neighborTable[i].id == nodeID) {
-      pos = i;
-      break;
-    }
-
-  // it's a new neighbor
-  if (pos == -1) {
-    NeighborRecord newRec;
-    newRec.id = nodeID;
-    newRec.location = nodeLocation;
-    neighborTable.push_back(newRec);
-  } else {
-    neighborTable[pos].location = nodeLocation;
-  }
-
-  tblSize = (int)neighborTable.size();
 }
 
 
@@ -234,10 +146,6 @@ int GpsrRouting::getNextHop(GpsrPacket *dataPacket) {
   }
 }
 
-//================================================================
-//   getNextHopGreedy - return next hop of greedy if found one,
-//   other wise set the mode to GPSR and find next GPSR hop
-//================================================================
 int GpsrRouting::getNextHopGreedy(GpsrPacket* dataPacket){
 
   int nextHop = -1; double dist = 0;
@@ -325,9 +233,7 @@ vector<NeighborRecord> GpsrRouting::getPlanarNeighbors() {
 };
 
 
-//================================================================
-//    getNextHopPerimeter
-//================================================================
+
 int GpsrRouting::getNextHopPerimeter(GpsrPacket* dataPacket) {
 
 
@@ -381,9 +287,9 @@ Point GpsrRouting::getNeighborLocation(int id) {
       return n.location;
     }
   }
-
   return Point(); // default
 }
+
 // will handle interaction between the application layer and the GPRS module in order to pass parameters such as
 // the node's position
 void GpsrRouting::handleNetworkControlCommand(cMessage *msg) {

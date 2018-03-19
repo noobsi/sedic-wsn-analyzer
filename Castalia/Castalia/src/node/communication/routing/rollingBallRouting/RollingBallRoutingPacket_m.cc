@@ -1,5 +1,5 @@
 //
-// Generated file, do not edit! Created by nedtool 4.6 from src/node/communication/routing/greedyRouting/GreedyRoutingPacket.msg.
+// Generated file, do not edit! Created by nedtool 4.6 from src/node/communication/routing/rollingBallRouting/RollingBallRoutingPacket.msg.
 //
 
 // Disable warnings about unused variables, empty switch stmts, etc:
@@ -10,7 +10,7 @@
 
 #include <iostream>
 #include <sstream>
-#include "GreedyRoutingPacket_m.h"
+#include "RollingBallRoutingPacket_m.h"
 
 USING_NAMESPACE
 
@@ -54,29 +54,29 @@ template<typename T>
 inline std::ostream& operator<<(std::ostream& out,const T&) {return out;}
 
 EXECUTE_ON_STARTUP(
-    cEnum *e = cEnum::find("GreedyPacketDef");
-    if (!e) enums.getInstance()->add(e = new cEnum("GreedyPacketDef"));
-    e->insert(GREEDY_DATA_PACKET, "GREEDY_DATA_PACKET");
+    cEnum *e = cEnum::find("RollingBallPacketDef");
+    if (!e) enums.getInstance()->add(e = new cEnum("RollingBallPacketDef"));
+    e->insert(ROLLINGBALL_DATA_PACKET, "ROLLINGBALL_DATA_PACKET");
 );
 
-Register_Class(GreedyPacket);
+Register_Class(RollingBallPacket);
 
-GreedyPacket::GreedyPacket(const char *name, int kind) : ::RoutingPacket(name,kind)
+RollingBallPacket::RollingBallPacket(const char *name, int kind) : ::RoutingPacket(name,kind)
 {
     this->packetId_var = 0;
-    this->GreedyPacketKind_var = 0;
+    this->RollingBallPacketKind_var = 0;
 }
 
-GreedyPacket::GreedyPacket(const GreedyPacket& other) : ::RoutingPacket(other)
+RollingBallPacket::RollingBallPacket(const RollingBallPacket& other) : ::RoutingPacket(other)
 {
     copy(other);
 }
 
-GreedyPacket::~GreedyPacket()
+RollingBallPacket::~RollingBallPacket()
 {
 }
 
-GreedyPacket& GreedyPacket::operator=(const GreedyPacket& other)
+RollingBallPacket& RollingBallPacket::operator=(const RollingBallPacket& other)
 {
     if (this==&other) return *this;
     ::RoutingPacket::operator=(other);
@@ -84,64 +84,64 @@ GreedyPacket& GreedyPacket::operator=(const GreedyPacket& other)
     return *this;
 }
 
-void GreedyPacket::copy(const GreedyPacket& other)
+void RollingBallPacket::copy(const RollingBallPacket& other)
 {
     this->packetId_var = other.packetId_var;
-    this->GreedyPacketKind_var = other.GreedyPacketKind_var;
+    this->RollingBallPacketKind_var = other.RollingBallPacketKind_var;
     this->destLocation_var = other.destLocation_var;
 }
 
-void GreedyPacket::parsimPack(cCommBuffer *b)
+void RollingBallPacket::parsimPack(cCommBuffer *b)
 {
     ::RoutingPacket::parsimPack(b);
     doPacking(b,this->packetId_var);
-    doPacking(b,this->GreedyPacketKind_var);
+    doPacking(b,this->RollingBallPacketKind_var);
     doPacking(b,this->destLocation_var);
 }
 
-void GreedyPacket::parsimUnpack(cCommBuffer *b)
+void RollingBallPacket::parsimUnpack(cCommBuffer *b)
 {
     ::RoutingPacket::parsimUnpack(b);
     doUnpacking(b,this->packetId_var);
-    doUnpacking(b,this->GreedyPacketKind_var);
+    doUnpacking(b,this->RollingBallPacketKind_var);
     doUnpacking(b,this->destLocation_var);
 }
 
-int GreedyPacket::getPacketId() const
+int RollingBallPacket::getPacketId() const
 {
     return packetId_var;
 }
 
-void GreedyPacket::setPacketId(int packetId)
+void RollingBallPacket::setPacketId(int packetId)
 {
     this->packetId_var = packetId;
 }
 
-int GreedyPacket::getGreedyPacketKind() const
+int RollingBallPacket::getRollingBallPacketKind() const
 {
-    return GreedyPacketKind_var;
+    return RollingBallPacketKind_var;
 }
 
-void GreedyPacket::setGreedyPacketKind(int GreedyPacketKind)
+void RollingBallPacket::setRollingBallPacketKind(int RollingBallPacketKind)
 {
-    this->GreedyPacketKind_var = GreedyPacketKind;
+    this->RollingBallPacketKind_var = RollingBallPacketKind;
 }
 
-Point& GreedyPacket::getDestLocation()
+Point& RollingBallPacket::getDestLocation()
 {
     return destLocation_var;
 }
 
-void GreedyPacket::setDestLocation(const Point& destLocation)
+void RollingBallPacket::setDestLocation(const Point& destLocation)
 {
     this->destLocation_var = destLocation;
 }
 
-class GreedyPacketDescriptor : public cClassDescriptor
+class RollingBallPacketDescriptor : public cClassDescriptor
 {
   public:
-    GreedyPacketDescriptor();
-    virtual ~GreedyPacketDescriptor();
+    RollingBallPacketDescriptor();
+    virtual ~RollingBallPacketDescriptor();
 
     virtual bool doesSupport(cObject *obj) const;
     virtual const char *getProperty(const char *propertyname) const;
@@ -160,34 +160,34 @@ class GreedyPacketDescriptor : public cClassDescriptor
     virtual void *getFieldStructPointer(void *object, int field, int i) const;
 };
 
-Register_ClassDescriptor(GreedyPacketDescriptor);
+Register_ClassDescriptor(RollingBallPacketDescriptor);
 
-GreedyPacketDescriptor::GreedyPacketDescriptor() : cClassDescriptor("GreedyPacket", "RoutingPacket")
+RollingBallPacketDescriptor::RollingBallPacketDescriptor() : cClassDescriptor("RollingBallPacket", "RoutingPacket")
 {
 }
 
-GreedyPacketDescriptor::~GreedyPacketDescriptor()
+RollingBallPacketDescriptor::~RollingBallPacketDescriptor()
 {
 }
 
-bool GreedyPacketDescriptor::doesSupport(cObject *obj) const
+bool RollingBallPacketDescriptor::doesSupport(cObject *obj) const
 {
-    return dynamic_cast<GreedyPacket *>(obj)!=NULL;
+    return dynamic_cast<RollingBallPacket *>(obj)!=NULL;
 }
 
-const char *GreedyPacketDescriptor::getProperty(const char *propertyname) const
+const char *RollingBallPacketDescriptor::getProperty(const char *propertyname) const
 {
     cClassDescriptor *basedesc = getBaseClassDescriptor();
     return basedesc ? basedesc->getProperty(propertyname) : NULL;
 }
 
-int GreedyPacketDescriptor::getFieldCount(void *object) const
+int RollingBallPacketDescriptor::getFieldCount(void *object) const
 {
     cClassDescriptor *basedesc = getBaseClassDescriptor();
     return basedesc ? 3+basedesc->getFieldCount(object) : 3;
 }
 
-unsigned int GreedyPacketDescriptor::getFieldTypeFlags(void *object, int field) const
+unsigned int RollingBallPacketDescriptor::getFieldTypeFlags(void *object, int field) const
 {
     cClassDescriptor *basedesc = getBaseClassDescriptor();
     if (basedesc) {
@@ -203,7 +203,7 @@ unsigned int GreedyPacketDescriptor::getFieldTypeFlags(void *object, int field) 
     return (field>=0 && field<3) ? fieldTypeFlags[field] : 0;
 }
 
-const char *GreedyPacketDescriptor::getFieldName(void *object, int field) const
+const char *RollingBallPacketDescriptor::getFieldName(void *object, int field) const
 {
     cClassDescriptor *basedesc = getBaseClassDescriptor();
     if (basedesc) {
@@ -213,23 +213,23 @@ const char *GreedyPacketDescriptor::getFieldName(void *object, int field) const
     }
     static const char *fieldNames[] = {
         "packetId",
-        "GreedyPacketKind",
+        "RollingBallPacketKind",
         "destLocation",
     };
     return (field>=0 && field<3) ? fieldNames[field] : NULL;
 }
 
-int GreedyPacketDescriptor::findField(void *object, const char *fieldName) const
+int RollingBallPacketDescriptor::findField(void *object, const char *fieldName) const
 {
     cClassDescriptor *basedesc = getBaseClassDescriptor();
     int base = basedesc ? basedesc->getFieldCount(object) : 0;
     if (fieldName[0]=='p' && strcmp(fieldName, "packetId")==0) return base+0;
-    if (fieldName[0]=='G' && strcmp(fieldName, "GreedyPacketKind")==0) return base+1;
+    if (fieldName[0]=='R' && strcmp(fieldName, "RollingBallPacketKind")==0) return base+1;
     if (fieldName[0]=='d' && strcmp(fieldName, "destLocation")==0) return base+2;
     return basedesc ? basedesc->findField(object, fieldName) : -1;
 }
 
-const char *GreedyPacketDescriptor::getFieldTypeString(void *object, int field) const
+const char *RollingBallPacketDescriptor::getFieldTypeString(void *object, int field) const
 {
     cClassDescriptor *basedesc = getBaseClassDescriptor();
     if (basedesc) {
@@ -245,7 +245,7 @@ const char *GreedyPacketDescriptor::getFieldTypeString(void *object, int field) 
     return (field>=0 && field<3) ? fieldTypeStrings[field] : NULL;
 }
 
-const char *GreedyPacketDescriptor::getFieldProperty(void *object, int field, const char *propertyname) const
+const char *RollingBallPacketDescriptor::getFieldProperty(void *object, int field, const char *propertyname) const
 {
     cClassDescriptor *basedesc = getBaseClassDescriptor();
     if (basedesc) {
@@ -255,13 +255,13 @@ const char *GreedyPacketDescriptor::getFieldProperty(void *object, int field, co
     }
     switch (field) {
         case 1:
-            if (!strcmp(propertyname,"enum")) return "GreedyPacketDef";
+            if (!strcmp(propertyname,"enum")) return "RollingBallPacketDef";
             return NULL;
         default: return NULL;
     }
 }
 
-int GreedyPacketDescriptor::getArraySize(void *object, int field) const
+int RollingBallPacketDescriptor::getArraySize(void *object, int field) const
 {
     cClassDescriptor *basedesc = getBaseClassDescriptor();
     if (basedesc) {
@@ -269,13 +269,13 @@ int GreedyPacketDescriptor::getArraySize(void *object, int field) const
             return basedesc->getArraySize(object, field);
         field -= basedesc->getFieldCount(object);
     }
-    GreedyPacket *pp = (GreedyPacket *)object; (void)pp;
+    RollingBallPacket *pp = (RollingBallPacket *)object; (void)pp;
     switch (field) {
         default: return 0;
     }
 }
 
-std::string GreedyPacketDescriptor::getFieldAsString(void *object, int field, int i) const
+std::string RollingBallPacketDescriptor::getFieldAsString(void *object, int field, int i) const
 {
     cClassDescriptor *basedesc = getBaseClassDescriptor();
     if (basedesc) {
@@ -283,16 +283,16 @@ std::string GreedyPacketDescriptor::getFieldAsString(void *object, int field, in
             return basedesc->getFieldAsString(object,field,i);
         field -= basedesc->getFieldCount(object);
     }
-    GreedyPacket *pp = (GreedyPacket *)object; (void)pp;
+    RollingBallPacket *pp = (RollingBallPacket *)object; (void)pp;
     switch (field) {
         case 0: return long2string(pp->getPacketId());
-        case 1: return long2string(pp->getGreedyPacketKind());
+        case 1: return long2string(pp->getRollingBallPacketKind());
         case 2: {std::stringstream out; out << pp->getDestLocation(); return out.str();}
         default: return "";
     }
 }
 
-bool GreedyPacketDescriptor::setFieldAsString(void *object, int field, int i, const char *value) const
+bool RollingBallPacketDescriptor::setFieldAsString(void *object, int field, int i, const char *value) const
 {
     cClassDescriptor *basedesc = getBaseClassDescriptor();
     if (basedesc) {
@@ -300,15 +300,15 @@ bool GreedyPacketDescriptor::setFieldAsString(void *object, int field, int i, co
             return basedesc->setFieldAsString(object,field,i,value);
         field -= basedesc->getFieldCount(object);
     }
-    GreedyPacket *pp = (GreedyPacket *)object; (void)pp;
+    RollingBallPacket *pp = (RollingBallPacket *)object; (void)pp;
     switch (field) {
         case 0: pp->setPacketId(string2long(value)); return true;
-        case 1: pp->setGreedyPacketKind(string2long(value)); return true;
+        case 1: pp->setRollingBallPacketKind(string2long(value)); return true;
         default: return false;
     }
 }
 
-const char *GreedyPacketDescriptor::getFieldStructName(void *object, int field) const
+const char *RollingBallPacketDescriptor::getFieldStructName(void *object, int field) const
 {
     cClassDescriptor *basedesc = getBaseClassDescriptor();
     if (basedesc) {
@@ -322,7 +322,7 @@ const char *GreedyPacketDescriptor::getFieldStructName(void *object, int field) 
     };
 }
 
-void *GreedyPacketDescriptor::getFieldStructPointer(void *object, int field, int i) const
+void *RollingBallPacketDescriptor::getFieldStructPointer(void *object, int field, int i) const
 {
     cClassDescriptor *basedesc = getBaseClassDescriptor();
     if (basedesc) {
@@ -330,7 +330,7 @@ void *GreedyPacketDescriptor::getFieldStructPointer(void *object, int field, int
             return basedesc->getFieldStructPointer(object, field, i);
         field -= basedesc->getFieldCount(object);
     }
-    GreedyPacket *pp = (GreedyPacket *)object; (void)pp;
+    RollingBallPacket *pp = (RollingBallPacket *)object; (void)pp;
     switch (field) {
         case 2: return (void *)(&pp->getDestLocation()); break;
         default: return NULL;

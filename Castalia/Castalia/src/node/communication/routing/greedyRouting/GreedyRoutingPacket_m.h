@@ -27,30 +27,21 @@
  * {
  * 
  *     GREEDY_DATA_PACKET = 0;       // data packet
- *     GREEDY_HELLO_MSG_PACKET = 1;      // hello msg
- *     GREEDY_REP_HELLO_MSG_PACKET = 2;     // rep hello msg 
- *     GREEDY_SINK_ADDRESS_PACKET = 3;    // sink address
  * }
  * </pre>
  */
 enum GreedyPacketDef {
-    GREEDY_DATA_PACKET = 0,
-    GREEDY_HELLO_MSG_PACKET = 1,
-    GREEDY_REP_HELLO_MSG_PACKET = 2,
-    GREEDY_SINK_ADDRESS_PACKET = 3
+    GREEDY_DATA_PACKET = 0
 };
 
 /**
- * Class generated from <tt>src/node/communication/routing/greedyRouting/GreedyRoutingPacket.msg:19</tt> by nedtool.
+ * Class generated from <tt>src/node/communication/routing/greedyRouting/GreedyRoutingPacket.msg:16</tt> by nedtool.
  * <pre>
  * packet GreedyPacket extends RoutingPacket
  * {
  *     int packetId;
  *     int GreedyPacketKind @enum(GreedyPacketDef);
  *     Point destLocation;
- * 
- *     // for hello message
- *     Point helloLocation;
  * }
  * </pre>
  */
@@ -60,7 +51,6 @@ class GreedyPacket : public ::RoutingPacket
     int packetId_var;
     int GreedyPacketKind_var;
     Point destLocation_var;
-    Point helloLocation_var;
 
   private:
     void copy(const GreedyPacket& other);
@@ -86,9 +76,6 @@ class GreedyPacket : public ::RoutingPacket
     virtual Point& getDestLocation();
     virtual const Point& getDestLocation() const {return const_cast<GreedyPacket*>(this)->getDestLocation();}
     virtual void setDestLocation(const Point& destLocation);
-    virtual Point& getHelloLocation();
-    virtual const Point& getHelloLocation() const {return const_cast<GreedyPacket*>(this)->getHelloLocation();}
-    virtual void setHelloLocation(const Point& helloLocation);
 };
 
 inline void doPacking(cCommBuffer *b, GreedyPacket& obj) {obj.parsimPack(b);}
