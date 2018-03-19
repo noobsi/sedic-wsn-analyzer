@@ -24,10 +24,13 @@
 #include "ResourceManager.h"
 #include "RoutingPacket_m.h"
 #include "ApplicationPacket_m.h"
+#include "GlobalLocationService.h"
+#include "GeoMathHelper.h"
 
 #define SELF_NETWORK_ADDRESS selfAddress.c_str()
 #define ROUTE_DEST_DELIMITER "#"
 #define PACKET_HISTORY_SIZE 5
+#define RADIO_RANGE 40
 
 using namespace std;
 
@@ -39,9 +42,11 @@ class VirtualRouting: public CastaliaModule, public TimerService {
 	int netBufferSize;			//in # of messages
 	unsigned int currentSequenceNumber;
 
+  vector<NeighborRecord> neighborTable;
 	/*--- Custom class parameters ---*/
 	double radioDataRate;
 	ResourceManager *resMgrModule;
+	Point selfLocation;
 
 	queue< cPacket* > TXBuffer;
 	vector< list< unsigned int> > pktHistory;

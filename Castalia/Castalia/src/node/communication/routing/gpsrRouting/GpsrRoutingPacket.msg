@@ -31,10 +31,6 @@ packet GpsrPacket extends RoutingPacket {
     Point perimeterRoutingFaceLocation; // Lf
     int currentFaceFirstSender; // e0
     int currentFaceFirstReceiver; // e0
-
-
-    // for hello message
-    Point helloLocation;
 }
 
 

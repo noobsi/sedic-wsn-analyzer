@@ -13,6 +13,7 @@
 #include "VirtualRouting.h"
 void VirtualRouting::initialize()
 {
+  GlobalLocationService::initialize(getParentModule()->getParentModule()->getParentModule());
 	maxNetFrameSize = par("maxNetFrameSize");
 	netDataFrameOverhead = par("netDataFrameOverhead");
 	netBufferSize = par("netBufferSize");
@@ -23,10 +24,13 @@ void VirtualRouting::initialize()
 	radioModule = check_and_cast <Radio*>(getParentModule()->getSubmodule("Radio"));
 	resMgrModule = check_and_cast <ResourceManager*>(getParentModule()->getParentModule()->getSubmodule("ResourceManager"));
 
+
 	if (!resMgrModule || !radioModule)
 		opp_error("\n Virtual Routing init: Error in geting a valid reference module(s).");
 
 	self = getParentModule()->getParentModule()->getIndex();
+  neighborTable = GlobalLocationService::getNeighborTable(self);
+  selfLocation = GlobalLocationService::getLocation(self);
 	// create the routing level address using self
 	stringstream out; out << self; 	selfAddress = out.str();
 

@@ -57,9 +57,6 @@ EXECUTE_ON_STARTUP(
     cEnum *e = cEnum::find("GreedyPacketDef");
     if (!e) enums.getInstance()->add(e = new cEnum("GreedyPacketDef"));
     e->insert(GREEDY_DATA_PACKET, "GREEDY_DATA_PACKET");
-    e->insert(GREEDY_HELLO_MSG_PACKET, "GREEDY_HELLO_MSG_PACKET");
-    e->insert(GREEDY_REP_HELLO_MSG_PACKET, "GREEDY_REP_HELLO_MSG_PACKET");
-    e->insert(GREEDY_SINK_ADDRESS_PACKET, "GREEDY_SINK_ADDRESS_PACKET");
 );
 
 Register_Class(GreedyPacket);
@@ -92,7 +89,6 @@ void GreedyPacket::copy(const GreedyPacket& other)
     this->packetId_var = other.packetId_var;
     this->GreedyPacketKind_var = other.GreedyPacketKind_var;
     this->destLocation_var = other.destLocation_var;
-    this->helloLocation_var = other.helloLocation_var;
 }
 
 void GreedyPacket::parsimPack(cCommBuffer *b)
@@ -101,7 +97,6 @@ void GreedyPacket::parsimPack(cCommBuffer *b)
     doPacking(b,this->packetId_var);
     doPacking(b,this->GreedyPacketKind_var);
     doPacking(b,this->destLocation_var);
-    doPacking(b,this->helloLocation_var);
 }
 
 void GreedyPacket::parsimUnpack(cCommBuffer *b)
@@ -110,7 +105,6 @@ void GreedyPacket::parsimUnpack(cCommBuffer *b)
     doUnpacking(b,this->packetId_var);
     doUnpacking(b,this->GreedyPacketKind_var);
     doUnpacking(b,this->destLocation_var);
-    doUnpacking(b,this->helloLocation_var);
 }
 
 int GreedyPacket::getPacketId() const
@@ -141,16 +135,6 @@ Point& GreedyPacket::getDestLocation()
 void GreedyPacket::setDestLocation(const Point& destLocation)
 {
     this->destLocation_var = destLocation;
-}
-
-Point& GreedyPacket::getHelloLocation()
-{
-    return helloLocation_var;
-}
-
-void GreedyPacket::setHelloLocation(const Point& helloLocation)
-{
-    this->helloLocation_var = helloLocation;
 }
 
 class GreedyPacketDescriptor : public cClassDescriptor
@@ -200,7 +184,7 @@ const char *GreedyPacketDescriptor::getProperty(const char *propertyname) const
 int GreedyPacketDescriptor::getFieldCount(void *object) const
 {
     cClassDescriptor *basedesc = getBaseClassDescriptor();
-    return basedesc ? 4+basedesc->getFieldCount(object) : 4;
+    return basedesc ? 3+basedesc->getFieldCount(object) : 3;
 }
 
 unsigned int GreedyPacketDescriptor::getFieldTypeFlags(void *object, int field) const
@@ -215,9 +199,8 @@ unsigned int GreedyPacketDescriptor::getFieldTypeFlags(void *object, int field) 
         FD_ISEDITABLE,
         FD_ISEDITABLE,
         FD_ISCOMPOUND,
-        FD_ISCOMPOUND,
     };
-    return (field>=0 && field<4) ? fieldTypeFlags[field] : 0;
+    return (field>=0 && field<3) ? fieldTypeFlags[field] : 0;
 }
 
 const char *GreedyPacketDescriptor::getFieldName(void *object, int field) const
@@ -232,9 +215,8 @@ const char *GreedyPacketDescriptor::getFieldName(void *object, int field) const
         "packetId",
         "GreedyPacketKind",
         "destLocation",
-        "helloLocation",
     };
-    return (field>=0 && field<4) ? fieldNames[field] : NULL;
+    return (field>=0 && field<3) ? fieldNames[field] : NULL;
 }
 
 int GreedyPacketDescriptor::findField(void *object, const char *fieldName) const
@@ -244,7 +226,6 @@ int GreedyPacketDescriptor::findField(void *object, const char *fieldName) const
     if (fieldName[0]=='p' && strcmp(fieldName, "packetId")==0) return base+0;
     if (fieldName[0]=='G' && strcmp(fieldName, "GreedyPacketKind")==0) return base+1;
     if (fieldName[0]=='d' && strcmp(fieldName, "destLocation")==0) return base+2;
-    if (fieldName[0]=='h' && strcmp(fieldName, "helloLocation")==0) return base+3;
     return basedesc ? basedesc->findField(object, fieldName) : -1;
 }
 
@@ -260,9 +241,8 @@ const char *GreedyPacketDescriptor::getFieldTypeString(void *object, int field) 
         "int",
         "int",
         "Point",
-        "Point",
     };
-    return (field>=0 && field<4) ? fieldTypeStrings[field] : NULL;
+    return (field>=0 && field<3) ? fieldTypeStrings[field] : NULL;
 }
 
 const char *GreedyPacketDescriptor::getFieldProperty(void *object, int field, const char *propertyname) const
@@ -308,7 +288,6 @@ std::string GreedyPacketDescriptor::getFieldAsString(void *object, int field, in
         case 0: return long2string(pp->getPacketId());
         case 1: return long2string(pp->getGreedyPacketKind());
         case 2: {std::stringstream out; out << pp->getDestLocation(); return out.str();}
-        case 3: {std::stringstream out; out << pp->getHelloLocation(); return out.str();}
         default: return "";
     }
 }
@@ -339,7 +318,6 @@ const char *GreedyPacketDescriptor::getFieldStructName(void *object, int field) 
     }
     switch (field) {
         case 2: return opp_typename(typeid(Point));
-        case 3: return opp_typename(typeid(Point));
         default: return NULL;
     };
 }
@@ -355,7 +333,6 @@ void *GreedyPacketDescriptor::getFieldStructPointer(void *object, int field, int
     GreedyPacket *pp = (GreedyPacket *)object; (void)pp;
     switch (field) {
         case 2: return (void *)(&pp->getDestLocation()); break;
-        case 3: return (void *)(&pp->getHelloLocation()); break;
         default: return NULL;
     }
 }

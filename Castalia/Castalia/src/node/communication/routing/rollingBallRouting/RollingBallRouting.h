@@ -1,42 +1,42 @@
 
 
-#ifndef _GREEDYROUTING_H_
-#define _GREEDYROUTING_H_
+#ifndef _ROLLINGBALLROUTING_H_
+#define _ROLLINGBALLROUTING_H_
 
 #include <map>
 #include "VirtualRouting.h"
-#include "GreedyRoutingPacket_m.h"
+#include "RollingBallRoutingPacket_m.h"
 #include "GeoMathHelper.h"
 
 
-#define DEFAULT_GREEDY_TIMEOUT   200.0
+#define DEFAULT_ROLLINGBALL_TIMEOUT   200.0
 /* the default time out period is 200.0 sec
    If the hello messge was not received during this period
    the entry in the neighbor list may be deleted 
    */
 
-// if something is wrong, will retry sending HELLO message GREEDY_RETRY_HELLO_DELAY second later
-#define GREEDY_RETRY_HELLO_DELAY 1
+// if something is wrong, will retry sending HELLO message ROLLINGBALL_RETRY_HELLO_DELAY second later
+#define ROLLINGBALL_RETRY_HELLO_DELAY 1
 
 using namespace std;
 
 
 
-enum GreedyRoutingTimers {
+enum RollingBallRoutingTimers {
 };
 
-class GreedyRouting: public VirtualRouting {
+class RollingBallRouting: public VirtualRouting {
   private:
 
     static int nextId;
     // Parameters
-    int GreedySetupFrameOverhead;	// in bytes
+    int RollingBallSetupFrameOverhead;	// in bytes
     bool collectTraceInfo;
     int currentSequenceNumber;
     double helloInterval;
     double activeRouteTimeout; //in s
 
-    // GreedyRouting-related member variables
+    // RollingBallRouting-related member variables
     int totalSNnodes;
     int packetsPerNode;
     bool isSink;		//is a .ned file parameter of the Application module
@@ -54,10 +54,13 @@ class GreedyRouting: public VirtualRouting {
     void processBufferedPacket();
 
     void sendHelloMessage();
-    void processDataPacketFromMacLayer(GreedyPacket*);
+    void processDataPacketFromMacLayer(RollingBallPacket*);
 
-    int getNextHopGreedy(GreedyPacket*);              // Greedy forwarding mode
+    int getNextHopRollingBall(RollingBallPacket*);              // RollingBall forwarding mode
+    int getNextHopGreedy(RollingBallPacket*);              // RollingBall forwarding mode
+    int getNextHop(RollingBallPacket*);              // RollingBall forwarding mode
     Point getNeighborLocation(int);
+    Point nearestCenter(Point pivot, Point next, Point center);
 };
 
-#endif				//GREEDYROUTINGMODULE
+#endif				//ROLLINGBALLROUTINGMODULE

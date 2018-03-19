@@ -283,6 +283,7 @@ Register_Class(RoutingPacket);
 
 RoutingPacket::RoutingPacket(const char *name, int kind) : ::cPacket(name,kind)
 {
+    this->TTL_var = 0;
     this->source_var = 0;
     this->destination_var = 0;
     this->sequenceNumber_var = 0;
@@ -308,6 +309,7 @@ RoutingPacket& RoutingPacket::operator=(const RoutingPacket& other)
 void RoutingPacket::copy(const RoutingPacket& other)
 {
     this->netMacInfoExchange_var = other.netMacInfoExchange_var;
+    this->TTL_var = other.TTL_var;
     this->source_var = other.source_var;
     this->destination_var = other.destination_var;
     this->sequenceNumber_var = other.sequenceNumber_var;
@@ -317,6 +319,7 @@ void RoutingPacket::parsimPack(cCommBuffer *b)
 {
     ::cPacket::parsimPack(b);
     doPacking(b,this->netMacInfoExchange_var);
+    doPacking(b,this->TTL_var);
     doPacking(b,this->source_var);
     doPacking(b,this->destination_var);
     doPacking(b,this->sequenceNumber_var);
@@ -326,6 +329,7 @@ void RoutingPacket::parsimUnpack(cCommBuffer *b)
 {
     ::cPacket::parsimUnpack(b);
     doUnpacking(b,this->netMacInfoExchange_var);
+    doUnpacking(b,this->TTL_var);
     doUnpacking(b,this->source_var);
     doUnpacking(b,this->destination_var);
     doUnpacking(b,this->sequenceNumber_var);
@@ -339,6 +343,16 @@ NetMacInfoExchange_type& RoutingPacket::getNetMacInfoExchange()
 void RoutingPacket::setNetMacInfoExchange(const NetMacInfoExchange_type& netMacInfoExchange)
 {
     this->netMacInfoExchange_var = netMacInfoExchange;
+}
+
+int RoutingPacket::getTTL() const
+{
+    return TTL_var;
+}
+
+void RoutingPacket::setTTL(int TTL)
+{
+    this->TTL_var = TTL;
 }
 
 const char * RoutingPacket::getSource() const
@@ -418,7 +432,7 @@ const char *RoutingPacketDescriptor::getProperty(const char *propertyname) const
 int RoutingPacketDescriptor::getFieldCount(void *object) const
 {
     cClassDescriptor *basedesc = getBaseClassDescriptor();
-    return basedesc ? 4+basedesc->getFieldCount(object) : 4;
+    return basedesc ? 5+basedesc->getFieldCount(object) : 5;
 }
 
 unsigned int RoutingPacketDescriptor::getFieldTypeFlags(void *object, int field) const
@@ -434,8 +448,9 @@ unsigned int RoutingPacketDescriptor::getFieldTypeFlags(void *object, int field)
         FD_ISEDITABLE,
         FD_ISEDITABLE,
         FD_ISEDITABLE,
+        FD_ISEDITABLE,
     };
-    return (field>=0 && field<4) ? fieldTypeFlags[field] : 0;
+    return (field>=0 && field<5) ? fieldTypeFlags[field] : 0;
 }
 
 const char *RoutingPacketDescriptor::getFieldName(void *object, int field) const
@@ -448,11 +463,12 @@ const char *RoutingPacketDescriptor::getFieldName(void *object, int field) const
     }
     static const char *fieldNames[] = {
         "netMacInfoExchange",
+        "TTL",
         "source",
         "destination",
         "sequenceNumber",
     };
-    return (field>=0 && field<4) ? fieldNames[field] : NULL;
+    return (field>=0 && field<5) ? fieldNames[field] : NULL;
 }
 
 int RoutingPacketDescriptor::findField(void *object, const char *fieldName) const
@@ -460,9 +476,10 @@ int RoutingPacketDescriptor::findField(void *object, const char *fieldName) cons
     cClassDescriptor *basedesc = getBaseClassDescriptor();
     int base = basedesc ? basedesc->getFieldCount(object) : 0;
     if (fieldName[0]=='n' && strcmp(fieldName, "netMacInfoExchange")==0) return base+0;
-    if (fieldName[0]=='s' && strcmp(fieldName, "source")==0) return base+1;
-    if (fieldName[0]=='d' && strcmp(fieldName, "destination")==0) return base+2;
-    if (fieldName[0]=='s' && strcmp(fieldName, "sequenceNumber")==0) return base+3;
+    if (fieldName[0]=='T' && strcmp(fieldName, "TTL")==0) return base+1;
+    if (fieldName[0]=='s' && strcmp(fieldName, "source")==0) return base+2;
+    if (fieldName[0]=='d' && strcmp(fieldName, "destination")==0) return base+3;
+    if (fieldName[0]=='s' && strcmp(fieldName, "sequenceNumber")==0) return base+4;
     return basedesc ? basedesc->findField(object, fieldName) : -1;
 }
 
@@ -476,11 +493,12 @@ const char *RoutingPacketDescriptor::getFieldTypeString(void *object, int field)
     }
     static const char *fieldTypeStrings[] = {
         "NetMacInfoExchange_type",
+        "int",
         "string",
         "string",
         "unsigned int",
     };
-    return (field>=0 && field<4) ? fieldTypeStrings[field] : NULL;
+    return (field>=0 && field<5) ? fieldTypeStrings[field] : NULL;
 }
 
 const char *RoutingPacketDescriptor::getFieldProperty(void *object, int field, const char *propertyname) const
@@ -521,9 +539,10 @@ std::string RoutingPacketDescriptor::getFieldAsString(void *object, int field, i
     RoutingPacket *pp = (RoutingPacket *)object; (void)pp;
     switch (field) {
         case 0: {std::stringstream out; out << pp->getNetMacInfoExchange(); return out.str();}
-        case 1: return oppstring2string(pp->getSource());
-        case 2: return oppstring2string(pp->getDestination());
-        case 3: return ulong2string(pp->getSequenceNumber());
+        case 1: return long2string(pp->getTTL());
+        case 2: return oppstring2string(pp->getSource());
+        case 3: return oppstring2string(pp->getDestination());
+        case 4: return ulong2string(pp->getSequenceNumber());
         default: return "";
     }
 }
@@ -538,9 +557,10 @@ bool RoutingPacketDescriptor::setFieldAsString(void *object, int field, int i, c
     }
     RoutingPacket *pp = (RoutingPacket *)object; (void)pp;
     switch (field) {
-        case 1: pp->setSource((value)); return true;
-        case 2: pp->setDestination((value)); return true;
-        case 3: pp->setSequenceNumber(string2ulong(value)); return true;
+        case 1: pp->setTTL(string2long(value)); return true;
+        case 2: pp->setSource((value)); return true;
+        case 3: pp->setDestination((value)); return true;
+        case 4: pp->setSequenceNumber(string2ulong(value)); return true;
         default: return false;
     }
 }

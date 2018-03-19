@@ -71,10 +71,6 @@ enum GpsrPacketDef {
  *     Point perimeterRoutingFaceLocation; // Lf
  *     int currentFaceFirstSender; // e0
  *     int currentFaceFirstReceiver; // e0
- * 
- * 
- *     // for hello message
- *     Point helloLocation;
  * }
  * </pre>
  */
@@ -91,7 +87,6 @@ class GpsrPacket : public ::RoutingPacket
     Point perimeterRoutingFaceLocation_var;
     int currentFaceFirstSender_var;
     int currentFaceFirstReceiver_var;
-    Point helloLocation_var;
 
   private:
     void copy(const GpsrPacket& other);
@@ -134,9 +129,6 @@ class GpsrPacket : public ::RoutingPacket
     virtual void setCurrentFaceFirstSender(int currentFaceFirstSender);
     virtual int getCurrentFaceFirstReceiver() const;
     virtual void setCurrentFaceFirstReceiver(int currentFaceFirstReceiver);
-    virtual Point& getHelloLocation();
-    virtual const Point& getHelloLocation() const {return const_cast<GpsrPacket*>(this)->getHelloLocation();}
-    virtual void setHelloLocation(const Point& helloLocation);
 };
 
 inline void doPacking(cCommBuffer *b, GpsrPacket& obj) {obj.parsimPack(b);}
