@@ -32,16 +32,7 @@ class RollingBallRouting: public VirtualRouting {
     // Parameters
     int RollingBallSetupFrameOverhead;	// in bytes
     bool collectTraceInfo;
-    int currentSequenceNumber;
-    double helloInterval;
-    double activeRouteTimeout; //in s
-
     // RollingBallRouting-related member variables
-    int totalSNnodes;
-    int packetsPerNode;
-    bool isSink;		//is a .ned file parameter of the Application module
-    int seqHello;
-
   protected:
 
     void startup();

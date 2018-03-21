@@ -45,7 +45,7 @@ function exec({config, sessionId}) {
       nodes, nodeConfig: {routingAlgorithm, macInterface}
     },
     simulation: {
-      traffic, timeLimit
+      traffic = [], timeLimit
     }
   } = config;
   cmd.get(`rm -rf Castalia-Trace.txt`);
@@ -134,9 +134,11 @@ function exec({config, sessionId}) {
     const eventTraceFileName = `logs/${sessionId}_eventTrace.txt`;
     const energyTraceFileName = `logs/${sessionId}_energyTrace.txt`;
     const nodeTraceFileName = `logs/${sessionId}_nodeTrace.txt`;
+    const drawFileName = `logs/${sessionId}_draw.txt`;
     let eventWriter = fs.createWriteStream(eventTraceFileName);
     let energyWriter = fs.createWriteStream(energyTraceFileName);
     let nodeWriter = fs.createWriteStream(nodeTraceFileName);
+    let drawWriter = fs.createWriteStream(drawFileName);
 
     let lines = fs.readFileSync('Castalia-Trace.txt').toString().split('\n');
     for (let line of lines) {
@@ -184,6 +186,7 @@ function exec({config, sessionId}) {
     energyWriter.end();
     eventWriter.end();
     nodeWriter.end();
+    drawWriter.end();
     session.markStatus(sessionId, "completed", "Simulation completed");
     if (queue.length >= 1)  {
       const {config, sessionId} = queue.shift();

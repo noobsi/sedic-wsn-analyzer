@@ -5,7 +5,6 @@ Define_Module(RollingBallRouting);
 int RollingBallRouting::nextId;
 
 void RollingBallRouting::startup(){
-  seqHello = par("seqHello");
   nextId = 0; // static member
 }
 
