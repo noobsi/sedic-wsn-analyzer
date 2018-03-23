@@ -17,8 +17,11 @@
 #ifndef NaN
 #define NaN std::numeric_limits<double>::quiet_NaN()
 #endif
+
 typedef double Angle;
 class G;
+
+using namespace std;
 
 struct Point {
   Point() {
@@ -100,6 +103,21 @@ class G {
       return intersection(&p1, &p2, &p3, &p4, p);
     };
     static void centers(Point p1, Point p2, double radius, Point &center1, Point &center2);
+    static vector<Point> centers(Point p1, Point p2, double radius);
+    static Point nearestCenterCCW(Point pivot, Point next, Point center, double radius) {
+      Point center1, center2;
+      G::centers(pivot, next, radius, center1, center2);
+
+      double pivotAngle = norm(atan2(pivot.y() - center1.y(), pivot.x() - center1.x()));
+      double nextAngle = norm(atan2(next.y() - center1.y(), next.x() - center1.x()));
+      double diffCCWAngle = norm(pivotAngle - nextAngle);
+
+      if (diffCCWAngle < M_PI) {
+        return center1;
+      } else {
+        return center2;
+      }
+    }
 };
 
 

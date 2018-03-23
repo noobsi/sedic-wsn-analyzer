@@ -261,3 +261,13 @@ bool VirtualRouting::isNotDuplicatePacket(cPacket * pkt)
 		pktHistory[src].pop_back();
 	return true;
 }
+
+void VirtualRouting::debugLine(double x1, double y1, double x2, double y2) {
+  trace() << "WSN_EVENT DRAW LINE " << x1 << " " << y1 << " " << x2 << " " << y2;
+}
+void VirtualRouting::debugCircle(double centerX, double centerY, double radius) {
+  trace() << "WSN_EVENT DRAW CIRCLE " << centerX << " " << centerY << " " << radius;
+}
+void VirtualRouting::debugPoint(double x1, double x2) {
+  trace() << "WSN_EVENT DRAW POINT " << x1 << " " << x2;
+}

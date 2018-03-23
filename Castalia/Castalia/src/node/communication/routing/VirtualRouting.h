@@ -21,6 +21,7 @@
 #include "TimerService.h"
 #include "CastaliaMessages.h"
 #include "Radio.h"
+#include "Util.h"
 #include "ResourceManager.h"
 #include "RoutingPacket_m.h"
 #include "ApplicationPacket_m.h"
@@ -72,6 +73,10 @@ class VirtualRouting: public CastaliaModule, public TimerService {
 	void toMacLayer(cMessage *);
 	void toMacLayer(cPacket *, int);
 	bool isNotDuplicatePacket(cPacket *);
+
+	void debugLine(double, double, double, double);
+	void debugCircle(double, double, double);
+	void debugPoint(double, double);
 
 	void encapsulatePacket(cPacket *, cPacket *);
 	cPacket *decapsulatePacket(cPacket *);

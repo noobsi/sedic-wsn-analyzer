@@ -1,6 +1,6 @@
-package node.communication.routing.rollingBallRouting;
+package node.communication.routing.stableRouting;
 
-simple RollingBallRouting like node.communication.routing.iRouting {
+simple StableRouting like node.communication.routing.iRouting {
  parameters:
 	bool collectTraceInfo = default (false);
 	int maxNetFrameSize = default (0);					// bytes, 0 means no limit

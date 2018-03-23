@@ -84,3 +84,10 @@ void G::centers(Point p1, Point p2, double r, Point &center1, Point &center2) {
     y3 - sqrt(r * r - (q / 2) * (q / 2)) * (x2 - x1) / q
   );
 }
+
+vector<Point> G::centers(Point p1, Point p2, double radius) {
+  Point center1, center2;
+  centers(p1, p2, radius, center1, center2);
+
+  return {center1, center2};
+}

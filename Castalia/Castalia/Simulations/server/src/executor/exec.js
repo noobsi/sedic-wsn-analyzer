@@ -71,7 +71,9 @@ function exec({config, sessionId}) {
         writer.write(`SN.node[*].Communication.RoutingProtocolName = "GpsrRouting"\n`)
       } else if (routingAlgorithm.toLowerCase() === 'rollingball') {
         writer.write(`SN.node[*].Communication.RoutingProtocolName = "RollingBallRouting"\n`)
-      } else{
+      } else if (routingAlgorithm.toLowerCase() === 'stable') {
+        writer.write(`SN.node[*].Communication.RoutingProtocolName = "StableRouting"\n`)
+      } else {
         writer.write(`SN.node[*].Communication.RoutingProtocolName = "GpsrRouting"\n`)
       }
     } else {
@@ -177,8 +179,35 @@ function exec({config, sessionId}) {
               "source": source, "dest": destination, "cur": current, "layer": "network", "time": time};
             eventWriter.write(`${JSON.stringify(event)}\n`);
           }
-        } else if (type === 'DEBUG') {
+        } else if (type === 'DRAW') {
+          let lineRegex = /LINE ([-\d\.]+) ([-\d\.]+) ([-\d\.]+) ([-\d\.]+)/;
+          let lineMatch = lineRegex.exec(line);
+          if (lineMatch) {
+            let x1 = parseFloat(lineMatch[1]);
+            let y1 = parseFloat(lineMatch[2]);
+            let x2 = parseFloat(lineMatch[3]);
+            let y2 = parseFloat(lineMatch[4]);
+            drawWriter.write(`${JSON.stringify({type: 'line', x1, y1, x2, y2})}\n`)
+          }
 
+
+          let circleRegex = /CIRCLE ([-\d\.]+) ([-\d\.]+) ([-\d\.]+)/;
+          let circleMatch = circleRegex.exec(line);
+          if (circleMatch) {
+            let centerX = parseFloat(circleMatch[1]);
+            let centerY = parseFloat(circleMatch[2]);
+            let radius = parseFloat(circleMatch[3]);
+            drawWriter.write(`${JSON.stringify({type: 'circle', centerX, centerY, radius})}\n`)
+          }
+
+
+          let pointRegex = /POINT ([-\d\.]+) ([-\d\.]+)/;
+          let pointMatch = pointRegex.exec(line);
+          if (pointMatch) {
+            let x = parseFloat(pointMatch[1]);
+            let y = parseFloat(pointMatch[2]);
+            drawWriter.write(`${JSON.stringify({type: 'point', x, y})}\n`)
+          }
         }
       }
     }
