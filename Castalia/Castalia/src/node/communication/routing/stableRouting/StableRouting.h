@@ -47,6 +47,7 @@ class StableRouting: public VirtualRouting {
 
     void sendHelloMessage();
     void processDataPacketFromMacLayer(StablePacket*);
+    void processDiscoverHolePacket(DiscoverHolePacket*);
 
     int getNextHop(StablePacket*);              // Stable forwarding mode
     Point getNeighborLocation(int);

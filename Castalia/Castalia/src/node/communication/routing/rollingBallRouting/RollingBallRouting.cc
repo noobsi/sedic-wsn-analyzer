@@ -172,25 +172,30 @@ int RollingBallRouting::getNextHopRollingBall(RollingBallPacket* dataPacket){
     int nextHop = -1;
     Point nextCenter;
     Point ballCenter = dataPacket->getBallCenter();
-     // respect to current node
-    double ballCenterAngle = G::norm(atan2(ballCenter.y() - selfLocation.y(), ballCenter.x() - selfLocation.x()));
-    double minAngle = 3 * M_PI;
-    for (auto &n: neighborTable) {
-      Point candidateCenter = nearestCenter(selfLocation, n.location, dataPacket->getBallCenter());
-      double candidateAngle = G::norm(atan2(candidateCenter.y() - selfLocation.y(), candidateCenter.x() - selfLocation.x()));
-      if (G::norm(candidateAngle - ballCenterAngle) < minAngle) {
-        minAngle = G::norm(candidateAngle - ballCenterAngle);
-        nextHop = n.id;
-        nextCenter = candidateCenter;
-      }
-    }
+//     // respect to current node
+//    double ballCenterAngle = G::norm(atan2(ballCenter.y() - selfLocation.y(), ballCenter.x() - selfLocation.x()));
+//    double minAngle = 3 * M_PI;
+//    for (auto &n: neighborTable) {
+//      Point candidateCenter = nearestCenter(selfLocation, n.location, dataPacket->getBallCenter());
+//      double candidateAngle = G::norm(atan2(candidateCenter.y() - selfLocation.y(), candidateCenter.x() - selfLocation.x()));
+//      if (G::norm(candidateAngle - ballCenterAngle) < minAngle) {
+//        minAngle = G::norm(candidateAngle - ballCenterAngle);
+//        nextHop = n.id;
+//        nextCenter = candidateCenter;
+//      }
+//    }
 
+    nextHop = Util::findNextHopRollingBall(selfLocation, ballCenter, RADIO_RANGE / 2, neighborTable, nextCenter);
     if (nextHop != -1) {
       dataPacket->setBallCenter(nextCenter);
     }
 
     return nextHop;
   }
+}
+
+int findNextHopRollingBall(Point pivot, Point ballCenter, double ballRadius, vector<NeighborRecord> candidates) {
+
 }
 
 Point RollingBallRouting::nearestCenter(Point pivot, Point next, Point center) {

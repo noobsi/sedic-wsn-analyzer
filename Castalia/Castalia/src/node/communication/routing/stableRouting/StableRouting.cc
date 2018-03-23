@@ -37,14 +37,18 @@ void StableRouting::timerFiredCallback(int index){
 
       if (!chosenCenter.isUnspecified()) {
         // start sending message to discover the hole
-        DiscoverHolePacket *discoverHolePacket = new DiscoverHolePacket("Discover hole packet", NETWORK_LAYER_PACKET);
-        discoverHolePacket->setOriginatorId(self);
-        discoverHolePacket->setPreviousLocation(selfLocation); // unspecified previous point
-        discoverHolePacket->setPath(Util::intVectorToString({self}).c_str());
-
 
         // find next hop counterclockwise
-
+        Point nextCenter;
+        int nextHop = Util::findNextHopRollingBall(selfLocation, chosenCenter, RADIO_RANGE / 2, neighborTable, nextCenter);
+        if (nextHop != -1) {
+          DiscoverHolePacket *discoverHolePacket = new DiscoverHolePacket("Discover hole packet", NETWORK_LAYER_PACKET);
+          discoverHolePacket->setOriginatorId(self);
+          discoverHolePacket->setPreviousLocation(selfLocation); // unspecified previous point
+          discoverHolePacket->setPath(Util::intVectorToString({self}).c_str());
+          discoverHolePacket->setBallCenter(nextCenter);
+          toMacLayer(discoverHolePacket, nextHop);
+        }
       }
 
       break;
@@ -94,6 +98,13 @@ void StableRouting::fromApplicationLayer(cPacket * pkt, const char *destination)
 
 
 void StableRouting::fromMacLayer(cPacket * pkt, int macAddress, double rssi, double lqi){
+  DiscoverHolePacket *discoverHolePacket = dynamic_cast <DiscoverHolePacket*>(pkt);
+  if (discoverHolePacket) {
+    processDiscoverHolePacket(discoverHolePacket);
+    return;
+  }
+
+
   StablePacket *netPacket = dynamic_cast <StablePacket*>(pkt);
   if (!netPacket)
     return;
@@ -115,6 +126,10 @@ void StableRouting::fromMacLayer(cPacket * pkt, int macAddress, double rssi, dou
 
 void StableRouting::finishSpecific() {
   trace() << "WSN_EVENT FINAL" << " id:" << self << " x:" << selfLocation.x() << " y:" << selfLocation.y() << " deathTime:-1";
+}
+
+void StableRouting::processDiscoverHolePacket(DiscoverHolePacket* pkt){
+  cout << "Received a discover hole packet" << endl;
 }
 
 void StableRouting::processDataPacketFromMacLayer(StablePacket* pkt){

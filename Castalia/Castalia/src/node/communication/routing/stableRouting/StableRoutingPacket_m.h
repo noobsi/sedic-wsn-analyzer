@@ -87,6 +87,7 @@ inline void doUnpacking(cCommBuffer *b, StablePacket& obj) {obj.parsimUnpack(b);
  * packet DiscoverHolePacket extends RoutingPacket
  * {
  *     int originatorId;
+ *     Point ballCenter;
  *     Point previousLocation;
  *     string path;
  * }
@@ -96,6 +97,7 @@ class DiscoverHolePacket : public ::RoutingPacket
 {
   protected:
     int originatorId_var;
+    Point ballCenter_var;
     Point previousLocation_var;
     opp_string path_var;
 
@@ -118,6 +120,9 @@ class DiscoverHolePacket : public ::RoutingPacket
     // field getter/setter methods
     virtual int getOriginatorId() const;
     virtual void setOriginatorId(int originatorId);
+    virtual Point& getBallCenter();
+    virtual const Point& getBallCenter() const {return const_cast<DiscoverHolePacket*>(this)->getBallCenter();}
+    virtual void setBallCenter(const Point& ballCenter);
     virtual Point& getPreviousLocation();
     virtual const Point& getPreviousLocation() const {return const_cast<DiscoverHolePacket*>(this)->getPreviousLocation();}
     virtual void setPreviousLocation(const Point& previousLocation);
