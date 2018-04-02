@@ -32,7 +32,9 @@ class StableRouting: public VirtualRouting {
     static int nextId;
     // Parameters
     int StableSetupFrameOverhead;	// in bytes
+    double secondBallRadius;
     bool collectTraceInfo;
+    map<int, int> smallestOriginatorId; // smallest originator id come from direction of a neighbor node (given by id)
     // StableRouting-related member variables
   protected:
 
@@ -48,6 +50,7 @@ class StableRouting: public VirtualRouting {
     void sendHelloMessage();
     void processDataPacketFromMacLayer(StablePacket*);
     void processDiscoverHolePacket(DiscoverHolePacket*);
+    void processHole(DiscoverHolePacket*);
 
     int getNextHop(StablePacket*);              // Stable forwarding mode
     Point getNeighborLocation(int);

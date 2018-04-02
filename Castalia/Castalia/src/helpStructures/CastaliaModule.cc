@@ -90,6 +90,10 @@ std::ostream & CastaliaModule::debug()
 	return cerr;
 }
 
+std::ostream & CastaliaModule::log() {
+  return trace() << " WSN_LOG ";
+}
+
 void CastaliaModule::declareOutput(const char *descr)
 {
 	simpleoutputs[descr].byIndex.clear();

@@ -1,5 +1,9 @@
 #include "GeoMathHelper.h"
 
+std::ostream &operator<<(std::ostream &os, const Point &m) {
+    return os << "(" << m.x() << ", " << m.y() << ")";
+}
+
 Line G::line(Point p1, Point p2) {
     Line re;
     line(p1.x_, p1.y_, p2.x_, p2.y_, re.a_, re.b_, re.c_);

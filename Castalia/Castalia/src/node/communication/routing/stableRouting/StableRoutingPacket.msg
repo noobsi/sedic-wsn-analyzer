@@ -21,7 +21,7 @@ packet StablePacket extends RoutingPacket {
 packet DiscoverHolePacket extends RoutingPacket {
   int originatorId;
   Point ballCenter;
-  Point previousLocation;
+  int previousId;
   string path;
 }
 

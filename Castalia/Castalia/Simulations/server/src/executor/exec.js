@@ -137,10 +137,12 @@ function exec({config, sessionId}) {
     const energyTraceFileName = `logs/${sessionId}_energyTrace.txt`;
     const nodeTraceFileName = `logs/${sessionId}_nodeTrace.txt`;
     const drawFileName = `logs/${sessionId}_draw.txt`;
+    const logFileName = `logs/${sessionId}_log.txt`;
     let eventWriter = fs.createWriteStream(eventTraceFileName);
     let energyWriter = fs.createWriteStream(energyTraceFileName);
     let nodeWriter = fs.createWriteStream(nodeTraceFileName);
     let drawWriter = fs.createWriteStream(drawFileName);
+    let logWriter = fs.createWriteStream(logFileName);
 
     let lines = fs.readFileSync('Castalia-Trace.txt').toString().split('\n');
     for (let line of lines) {
@@ -180,34 +182,44 @@ function exec({config, sessionId}) {
             eventWriter.write(`${JSON.stringify(event)}\n`);
           }
         } else if (type === 'DRAW') {
-          let lineRegex = /LINE ([-\d\.]+) ([-\d\.]+) ([-\d\.]+) ([-\d\.]+)/;
+          // console.log(line);
+          let lineRegex = /LINE ([-\d\.]+) ([-\d\.]+) ([-\d\.]+) ([-\d\.]+) (\S+)/;
           let lineMatch = lineRegex.exec(line);
           if (lineMatch) {
             let x1 = parseFloat(lineMatch[1]);
             let y1 = parseFloat(lineMatch[2]);
             let x2 = parseFloat(lineMatch[3]);
             let y2 = parseFloat(lineMatch[4]);
-            drawWriter.write(`${JSON.stringify({type: 'line', x1, y1, x2, y2})}\n`)
+            let color = lineMatch[5];
+            drawWriter.write(`${JSON.stringify({type: 'line', x1, y1, x2, y2, color})}\n`)
           }
 
 
-          let circleRegex = /CIRCLE ([-\d\.]+) ([-\d\.]+) ([-\d\.]+)/;
+          let circleRegex = /CIRCLE ([\d\.]+) ([\d\.]+) ([\d\.]+) (\S+)/;
           let circleMatch = circleRegex.exec(line);
           if (circleMatch) {
             let centerX = parseFloat(circleMatch[1]);
             let centerY = parseFloat(circleMatch[2]);
             let radius = parseFloat(circleMatch[3]);
-            drawWriter.write(`${JSON.stringify({type: 'circle', centerX, centerY, radius})}\n`)
+            let color = circleMatch[4];
+            drawWriter.write(`${JSON.stringify({type: 'circle', centerX, centerY, radius, color})}\n`)
           }
 
 
-          let pointRegex = /POINT ([-\d\.]+) ([-\d\.]+)/;
+          let pointRegex = /POINT ([\d\.]+) ([\d\.]+) (\S+)/;
           let pointMatch = pointRegex.exec(line);
           if (pointMatch) {
             let x = parseFloat(pointMatch[1]);
             let y = parseFloat(pointMatch[2]);
-            drawWriter.write(`${JSON.stringify({type: 'point', x, y})}\n`)
+            let color = pointMatch[3];
+            drawWriter.write(`${JSON.stringify({type: 'point', x, y, color})}\n`)
           }
+        }
+      } else if (/WSN_LOG/gi.test(line)){
+        let regex = /WSN_LOG (.+)/;
+        let match = regex.exec(line);
+        if (match) {
+          logWriter.write(`${match[1]}\n`);
         }
       }
     }
@@ -216,6 +228,7 @@ function exec({config, sessionId}) {
     eventWriter.end();
     nodeWriter.end();
     drawWriter.end();
+    logWriter.end();
     session.markStatus(sessionId, "completed", "Simulation completed");
     if (queue.length >= 1)  {
       const {config, sessionId} = queue.shift();

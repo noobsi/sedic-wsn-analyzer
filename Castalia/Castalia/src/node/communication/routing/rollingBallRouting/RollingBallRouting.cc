@@ -50,7 +50,7 @@ void RollingBallRouting::fromApplicationLayer(cPacket * pkt, const char *destina
     return;
   }
   else {
-    delete dataPacket;
+//    delete dataPacket;
   }
 
 }
@@ -115,7 +115,7 @@ void RollingBallRouting::processDataPacketFromMacLayer(RollingBallPacket* pkt){
   else {
     trace() << "WSN_EVENT DROP packetId:" << pkt->getPacketId() << " source:" << pkt->getSource()
       << " destination:" << pkt->getDestination() << " current:" << self;
-    delete netPacket;
+//    delete netPacket;
   }
 }
 
@@ -185,17 +185,13 @@ int RollingBallRouting::getNextHopRollingBall(RollingBallPacket* dataPacket){
 //      }
 //    }
 
-    nextHop = Util::findNextHopRollingBall(selfLocation, ballCenter, RADIO_RANGE / 2, neighborTable, nextCenter);
+    nextHop = G::findNextHopRollingBall(selfLocation, ballCenter, RADIO_RANGE / 2, neighborTable, nextCenter);
     if (nextHop != -1) {
       dataPacket->setBallCenter(nextCenter);
     }
 
     return nextHop;
   }
-}
-
-int findNextHopRollingBall(Point pivot, Point ballCenter, double ballRadius, vector<NeighborRecord> candidates) {
-
 }
 
 Point RollingBallRouting::nearestCenter(Point pivot, Point next, Point center) {

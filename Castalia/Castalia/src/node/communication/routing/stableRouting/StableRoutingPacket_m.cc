@@ -342,6 +342,7 @@ Register_Class(DiscoverHolePacket);
 DiscoverHolePacket::DiscoverHolePacket(const char *name, int kind) : ::RoutingPacket(name,kind)
 {
     this->originatorId_var = 0;
+    this->previousId_var = 0;
     this->path_var = 0;
 }
 
@@ -366,7 +367,7 @@ void DiscoverHolePacket::copy(const DiscoverHolePacket& other)
 {
     this->originatorId_var = other.originatorId_var;
     this->ballCenter_var = other.ballCenter_var;
-    this->previousLocation_var = other.previousLocation_var;
+    this->previousId_var = other.previousId_var;
     this->path_var = other.path_var;
 }
 
@@ -375,7 +376,7 @@ void DiscoverHolePacket::parsimPack(cCommBuffer *b)
     ::RoutingPacket::parsimPack(b);
     doPacking(b,this->originatorId_var);
     doPacking(b,this->ballCenter_var);
-    doPacking(b,this->previousLocation_var);
+    doPacking(b,this->previousId_var);
     doPacking(b,this->path_var);
 }
 
@@ -384,7 +385,7 @@ void DiscoverHolePacket::parsimUnpack(cCommBuffer *b)
     ::RoutingPacket::parsimUnpack(b);
     doUnpacking(b,this->originatorId_var);
     doUnpacking(b,this->ballCenter_var);
-    doUnpacking(b,this->previousLocation_var);
+    doUnpacking(b,this->previousId_var);
     doUnpacking(b,this->path_var);
 }
 
@@ -408,14 +409,14 @@ void DiscoverHolePacket::setBallCenter(const Point& ballCenter)
     this->ballCenter_var = ballCenter;
 }
 
-Point& DiscoverHolePacket::getPreviousLocation()
+int DiscoverHolePacket::getPreviousId() const
 {
-    return previousLocation_var;
+    return previousId_var;
 }
 
-void DiscoverHolePacket::setPreviousLocation(const Point& previousLocation)
+void DiscoverHolePacket::setPreviousId(int previousId)
 {
-    this->previousLocation_var = previousLocation;
+    this->previousId_var = previousId;
 }
 
 const char * DiscoverHolePacket::getPath() const
@@ -489,7 +490,7 @@ unsigned int DiscoverHolePacketDescriptor::getFieldTypeFlags(void *object, int f
     static unsigned int fieldTypeFlags[] = {
         FD_ISEDITABLE,
         FD_ISCOMPOUND,
-        FD_ISCOMPOUND,
+        FD_ISEDITABLE,
         FD_ISEDITABLE,
     };
     return (field>=0 && field<4) ? fieldTypeFlags[field] : 0;
@@ -506,7 +507,7 @@ const char *DiscoverHolePacketDescriptor::getFieldName(void *object, int field) 
     static const char *fieldNames[] = {
         "originatorId",
         "ballCenter",
-        "previousLocation",
+        "previousId",
         "path",
     };
     return (field>=0 && field<4) ? fieldNames[field] : NULL;
@@ -518,7 +519,7 @@ int DiscoverHolePacketDescriptor::findField(void *object, const char *fieldName)
     int base = basedesc ? basedesc->getFieldCount(object) : 0;
     if (fieldName[0]=='o' && strcmp(fieldName, "originatorId")==0) return base+0;
     if (fieldName[0]=='b' && strcmp(fieldName, "ballCenter")==0) return base+1;
-    if (fieldName[0]=='p' && strcmp(fieldName, "previousLocation")==0) return base+2;
+    if (fieldName[0]=='p' && strcmp(fieldName, "previousId")==0) return base+2;
     if (fieldName[0]=='p' && strcmp(fieldName, "path")==0) return base+3;
     return basedesc ? basedesc->findField(object, fieldName) : -1;
 }
@@ -534,7 +535,7 @@ const char *DiscoverHolePacketDescriptor::getFieldTypeString(void *object, int f
     static const char *fieldTypeStrings[] = {
         "int",
         "Point",
-        "Point",
+        "int",
         "string",
     };
     return (field>=0 && field<4) ? fieldTypeStrings[field] : NULL;
@@ -579,7 +580,7 @@ std::string DiscoverHolePacketDescriptor::getFieldAsString(void *object, int fie
     switch (field) {
         case 0: return long2string(pp->getOriginatorId());
         case 1: {std::stringstream out; out << pp->getBallCenter(); return out.str();}
-        case 2: {std::stringstream out; out << pp->getPreviousLocation(); return out.str();}
+        case 2: return long2string(pp->getPreviousId());
         case 3: return oppstring2string(pp->getPath());
         default: return "";
     }
@@ -596,6 +597,7 @@ bool DiscoverHolePacketDescriptor::setFieldAsString(void *object, int field, int
     DiscoverHolePacket *pp = (DiscoverHolePacket *)object; (void)pp;
     switch (field) {
         case 0: pp->setOriginatorId(string2long(value)); return true;
+        case 2: pp->setPreviousId(string2long(value)); return true;
         case 3: pp->setPath((value)); return true;
         default: return false;
     }
@@ -611,7 +613,6 @@ const char *DiscoverHolePacketDescriptor::getFieldStructName(void *object, int f
     }
     switch (field) {
         case 1: return opp_typename(typeid(Point));
-        case 2: return opp_typename(typeid(Point));
         default: return NULL;
     };
 }
@@ -627,7 +628,6 @@ void *DiscoverHolePacketDescriptor::getFieldStructPointer(void *object, int fiel
     DiscoverHolePacket *pp = (DiscoverHolePacket *)object; (void)pp;
     switch (field) {
         case 1: return (void *)(&pp->getBallCenter()); break;
-        case 2: return (void *)(&pp->getPreviousLocation()); break;
         default: return NULL;
     }
 }

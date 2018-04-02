@@ -74,9 +74,13 @@ class VirtualRouting: public CastaliaModule, public TimerService {
 	void toMacLayer(cPacket *, int);
 	bool isNotDuplicatePacket(cPacket *);
 
-	void debugLine(double, double, double, double);
-	void debugCircle(double, double, double);
-	void debugPoint(double, double);
+	void debugLine(double, double, double, double, string color);
+	void debugLine(Point, Point, string color);
+	void debugCircle(double, double, double, string color);
+	void debugCircle(Point, double, string color);
+	void debugPoint(double, double, string color);
+	void debugPoint(Point, string color);
+	void debugPolygon(vector<Point>, string color);
 
 	void encapsulatePacket(cPacket *, cPacket *);
 	cPacket *decapsulatePacket(cPacket *);

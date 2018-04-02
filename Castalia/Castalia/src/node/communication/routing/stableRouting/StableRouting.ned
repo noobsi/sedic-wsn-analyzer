@@ -7,6 +7,7 @@ simple StableRouting like node.communication.routing.iRouting {
   int netDataFrameOverhead = default (14);			// bytes
 	int netBufferSize = default (32);					// number of messages
 	int GreedySetupFrameOverhead = default (13);	        // bytes
+	double secondBallRadius = default (60);
 
 
  gates:

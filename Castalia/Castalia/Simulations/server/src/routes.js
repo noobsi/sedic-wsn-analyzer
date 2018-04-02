@@ -63,6 +63,26 @@ routes.get('/result/energy/:sessionId', (req, res, next) => {
   })
 });
 
+routes.get('/result/log/:sessionId', (req, res, next) => {
+  const sessionId = req.params.sessionId;
+  const ss = session.getSession(sessionId) || {status: "error", error: "invalid session id"};
+  if (ss.status !== 'completed') {
+    res.status(404).json(ss);
+    return;
+  }
+
+  const filePath = path.resolve(`logs/${sessionId}_log.txt`);
+
+  res.sendFile(filePath, (error) => {
+    if (error) {
+      res.status(404).json({
+        status: "error",
+        error: "Invalid session id or simulation not completed"
+      })
+    }
+  })
+});
+
 routes.get('/result/draw/:sessionId', (req, res, next) => {
   const sessionId = req.params.sessionId;
   const ss = session.getSession(sessionId) || {status: "error", error: "invalid session id"};

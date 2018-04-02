@@ -6,17 +6,10 @@
 #include <omnetpp.h>
 #include <iostream>
 #include <iomanip>
-
 #include "GeoMathHelper.h"
 
 using namespace std;
 
-struct NeighborRecord {
-  int id;      // the node's ID
-  Point location;
-  NeighborRecord(){}
-  NeighborRecord(int id, Point location): id(id), location(location) {}
-};
 
 class GlobalLocationService {
  private:

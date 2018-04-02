@@ -1,6 +1,5 @@
 
 #include "GlobalLocationService.h"
-#include "GeoMathHelper.h"
 
 cModule *GlobalLocationService::networkModule;
 bool GlobalLocationService::initialized = false;

@@ -88,7 +88,7 @@ inline void doUnpacking(cCommBuffer *b, StablePacket& obj) {obj.parsimUnpack(b);
  * {
  *     int originatorId;
  *     Point ballCenter;
- *     Point previousLocation;
+ *     int previousId;
  *     string path;
  * }
  * </pre>
@@ -98,7 +98,7 @@ class DiscoverHolePacket : public ::RoutingPacket
   protected:
     int originatorId_var;
     Point ballCenter_var;
-    Point previousLocation_var;
+    int previousId_var;
     opp_string path_var;
 
   private:
@@ -123,9 +123,8 @@ class DiscoverHolePacket : public ::RoutingPacket
     virtual Point& getBallCenter();
     virtual const Point& getBallCenter() const {return const_cast<DiscoverHolePacket*>(this)->getBallCenter();}
     virtual void setBallCenter(const Point& ballCenter);
-    virtual Point& getPreviousLocation();
-    virtual const Point& getPreviousLocation() const {return const_cast<DiscoverHolePacket*>(this)->getPreviousLocation();}
-    virtual void setPreviousLocation(const Point& previousLocation);
+    virtual int getPreviousId() const;
+    virtual void setPreviousId(int previousId);
     virtual const char * getPath() const;
     virtual void setPath(const char * path);
 };

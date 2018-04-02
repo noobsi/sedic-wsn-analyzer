@@ -262,12 +262,29 @@ bool VirtualRouting::isNotDuplicatePacket(cPacket * pkt)
 	return true;
 }
 
-void VirtualRouting::debugLine(double x1, double y1, double x2, double y2) {
-  trace() << "WSN_EVENT DRAW LINE " << x1 << " " << y1 << " " << x2 << " " << y2;
+void VirtualRouting::debugLine(double x1, double y1, double x2, double y2, string color) {
+  trace() << "WSN_EVENT DRAW LINE " << x1 << " " << y1 << " " << x2 << " " << y2 << " " << color;
 }
-void VirtualRouting::debugCircle(double centerX, double centerY, double radius) {
-  trace() << "WSN_EVENT DRAW CIRCLE " << centerX << " " << centerY << " " << radius;
+void VirtualRouting::debugLine(Point p1, Point p2, string color) {
+  debugLine(p1.x(), p1.y(), p2.x(), p2.y(), color);
 }
-void VirtualRouting::debugPoint(double x1, double x2) {
-  trace() << "WSN_EVENT DRAW POINT " << x1 << " " << x2;
+void VirtualRouting::debugCircle(double centerX, double centerY, double radius, string color) {
+  trace() << "WSN_EVENT DRAW CIRCLE " << centerX << " " << centerY << " " << radius << " " << color;
+}
+void VirtualRouting::debugCircle(Point center, double radius, string color) {
+  debugCircle(center.x(), center.y(), radius, color);
+}
+void VirtualRouting::debugPoint(double x1, double x2, string color) {
+  trace() << "WSN_EVENT DRAW POINT " << x1 << " " << x2 << " " << color;
+}
+void VirtualRouting::debugPoint(Point p, string color) {
+  debugPoint(p.x(), p.y(), color);
+}
+
+void VirtualRouting::debugPolygon(vector<Point> ps, string color) {
+  for (int i = 0; i < ps.size(); i++) {
+    Point from = ps[i];
+    Point to = ps[(i + 1) % ps.size()];
+    debugLine(from, to, color);
+  }
 }

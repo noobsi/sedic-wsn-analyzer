@@ -51,7 +51,7 @@ void GreedyRouting::fromApplicationLayer(cPacket * pkt, const char *destination)
     return;
   }
   else {
-    delete dataPacket;
+//    delete dataPacket;;
   }
 
 }
@@ -117,8 +117,8 @@ void GreedyRouting::processDataPacketFromMacLayer(GreedyPacket* pkt){
   else {
     trace() << "WSN_EVENT DROP packetId:" << pkt->getPacketId() << " source:" << pkt->getSource()
       << " destination:" << pkt->getDestination() << " current:" << self;
-    delete netPacket;
-  }
+//    delete netPacket;;
+  };
 }
 
 int GreedyRouting::getNextHopGreedy(GreedyPacket* dataPacket){

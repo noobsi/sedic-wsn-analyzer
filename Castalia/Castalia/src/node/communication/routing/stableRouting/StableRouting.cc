@@ -7,7 +7,8 @@ int StableRouting::nextId;
 
 void StableRouting::startup(){
   nextId = 0; // static member
-  setTimer(DISCOVER_HOLE_START, 0);
+  setTimer(DISCOVER_HOLE_START, 2);
+  secondBallRadius = par("secondBallRadius");
 }
 
 void StableRouting::timerFiredCallback(int index){
@@ -21,7 +22,7 @@ void StableRouting::timerFiredCallback(int index){
           bool ok = true;
           for (auto on: neighborTable) {
             if (on.id == n.id) continue;
-            if (G::distance(center, on.location) < RADIO_RANGE / 2) {
+            if (G::distance(center, on.location) <= RADIO_RANGE / 2) {
               ok = false;
             }
           }
@@ -36,15 +37,13 @@ void StableRouting::timerFiredCallback(int index){
       }
 
       if (!chosenCenter.isUnspecified()) {
-        // start sending message to discover the hole
-
-        // find next hop counterclockwise
         Point nextCenter;
-        int nextHop = Util::findNextHopRollingBall(selfLocation, chosenCenter, RADIO_RANGE / 2, neighborTable, nextCenter);
+        int nextHop = G::findNextHopRollingBall(selfLocation, chosenCenter, RADIO_RANGE / 2, neighborTable, nextCenter);
         if (nextHop != -1) {
+          Point nextHopLocation = GlobalLocationService::getLocation(nextHop);
           DiscoverHolePacket *discoverHolePacket = new DiscoverHolePacket("Discover hole packet", NETWORK_LAYER_PACKET);
           discoverHolePacket->setOriginatorId(self);
-          discoverHolePacket->setPreviousLocation(selfLocation); // unspecified previous point
+          discoverHolePacket->setPreviousId(self); // unspecified previous point
           discoverHolePacket->setPath(Util::intVectorToString({self}).c_str());
           discoverHolePacket->setBallCenter(nextCenter);
           toMacLayer(discoverHolePacket, nextHop);
@@ -128,8 +127,152 @@ void StableRouting::finishSpecific() {
   trace() << "WSN_EVENT FINAL" << " id:" << self << " x:" << selfLocation.x() << " y:" << selfLocation.y() << " deathTime:-1";
 }
 
+void StableRouting::processHole(DiscoverHolePacket* pkt) {
+
+  Point ballCenter = pkt->getBallCenter();
+  string pathString(pkt->getPath());
+  vector<int> path = Util::stringToIntVector(pathString);
+  vector<Point> points;
+  for (auto id: path) {
+    points.push_back(GlobalLocationService::getLocation(id));
+  }
+  if (!G::pointInPolygon(ballCenter, points)) {
+    return; // outside boundary
+  }
+
+  // processing the thole
+  reverse(points.begin(), points.end()); // reverse because  the hole found is clockwise, while convex hull is counterclockwise
+  vector<Point> convexHull = G::convexHull(points);
+  debugPolygon(points, "green");
+//  debugPolygon(convexHull, "blue");
+  // check if there is a really significant "cave"
+  int pi = 0;
+  for (int i = 0; i < points.size(); i++) {
+    if (points[i] == convexHull[0]) {
+      pi = i;
+      break;
+    }
+  }
+
+  for (int i = 0; i < convexHull.size(); i++) {
+    // invariant: at the beginning of the loop, points[pi] == convexHull[gate1]
+    int gate1 = i;
+    int gate2 = (i + 1) % convexHull.size();
+    double maxDistance = 0;
+    int startId = pi;
+    while (points[pi] != convexHull[gate2]) {
+      double distance = G::distanceToLineSegment(convexHull[gate1], convexHull[gate2], points[pi]);
+      if (distance > maxDistance) {
+        maxDistance = distance;
+      }
+      pi = (pi + 1) % points.size();
+    }
+    int endId = pi;
+
+    if (maxDistance > 5 * RADIO_RANGE) {
+      // cave points is points within the cave (between two gate)
+      vector<Point> cavePoints;
+      cavePoints.push_back(points[startId]);
+      int i = startId;
+      while (i != endId) {
+        i = (i + 1) % points.size();
+        cavePoints.push_back(points[i]);
+      }
+
+      debugPolygon(cavePoints, "red");
+      const double SECOND_BALL_RADIUS = 35;
+      vector<Point> candidates;
+      for (auto &point: cavePoints) {
+        if (G::distance(cavePoints[0], point) <= SECOND_BALL_RADIUS * 2 && cavePoints[0] != point) {
+          candidates.push_back(point);
+        }
+      }
+
+      Point chosenCenter;
+      for (auto &n: candidates) {
+        for (auto center: G::centers(cavePoints[0], n, SECOND_BALL_RADIUS)) {
+          bool ok = true;
+          for (auto on: candidates) {
+            if (n == on) continue;
+            if (G::distance(center, on) < SECOND_BALL_RADIUS) {
+              ok = false;
+            }
+          }
+
+          if (ok && !G::pointInPolygon(center, cavePoints)) {
+            chosenCenter = center;
+          }
+        }
+      }
+
+
+      // start rolling the chosen center from points[startId] to points[endId]
+      // dealing with cavePoints
+      Point currentPoint = cavePoints[0];
+      Point currentCenter = chosenCenter;
+      while (currentPoint != cavePoints[cavePoints.size() - 1]) {
+        debugCircle(currentCenter, SECOND_BALL_RADIUS, "black");
+//        debugPoint(currentCenter, "black");
+        vector<Point> candidates;
+        for (auto &point: cavePoints) {
+          if (G::distance(currentPoint, point) <= SECOND_BALL_RADIUS * 2 && currentPoint != point) {
+            candidates.push_back(point);
+          }
+        }
+        Point nextCenter;
+        Point nextPoint = G::findNextHopRollingBall(currentPoint, currentCenter, SECOND_BALL_RADIUS, candidates, nextCenter);
+        debugLine(currentCenter, nextCenter, "blue");
+        currentPoint = nextPoint;
+        currentCenter = nextCenter;
+      }
+    }
+  }
+
+
+
+}
+
 void StableRouting::processDiscoverHolePacket(DiscoverHolePacket* pkt){
-  cout << "Received a discover hole packet" << endl;
+  int originatorId = pkt->getOriginatorId();
+  int previousId = pkt->getPreviousId();
+  Point ballCenter = pkt->getBallCenter();
+  string pathString(pkt->getPath());
+  vector<int> path = Util::stringToIntVector(pathString);
+
+  if (smallestOriginatorId.find(previousId) != smallestOriginatorId.end()) {
+    if (smallestOriginatorId[previousId] < originatorId) {
+      // drop the packet
+      return;
+    } else {
+      smallestOriginatorId[previousId] = originatorId;
+    }
+  } else {
+    smallestOriginatorId[previousId] = originatorId;
+  }
+
+
+  Point nextCenter;
+  int nextHop = G::findNextHopRollingBall(selfLocation, ballCenter, RADIO_RANGE / 2, neighborTable, nextCenter);
+
+  if (nextHop != -1) {
+    if (path.size() >= 2) {
+      if (path[0] == self && path[1] == nextHop) {
+        if (path.size() > 10) {
+          // TODO
+          processHole(pkt);
+        }
+        return;
+      }
+    }
+    path.push_back(self);
+//    debugLine(selfLocation, GlobalLocationService::getLocation(nextHop), "green");
+    DiscoverHolePacket *newPkt = pkt->dup();
+    newPkt->setPreviousId(self);
+    newPkt->setBallCenter(nextCenter);
+    newPkt->setPath(Util::intVectorToString(path).c_str());
+    toMacLayer(newPkt, nextHop);
+  }
+
 }
 
 void StableRouting::processDataPacketFromMacLayer(StablePacket* pkt){
