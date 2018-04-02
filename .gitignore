@@ -5,11 +5,14 @@ Castalia/Castalia/CastaliaBin
 Castalia/Castalia/Simulations/*/*.txt
 Castalia/Castalia/Simulations/server/archive/*
 Castalia/Castalia/Simulations/server/dist/
-visualizer/public/
 *.iml
 Castalia/Castalia/Makefile
 Castalia/Castalia/Simulations/server/package-lock.json
 visualizer/package-lock.json
+visualizer/public/
 visualizer/public_cache/
+new_visualizer/package-lock.json
+new_visualizer/public/
+new_visualizer/public_cache/
 Castalia/Castalia/Simulations/server/logs
 Castalia/Castalia/Simulations/server/public
