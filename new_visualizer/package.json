@@ -1,0 +1,32 @@
+{
+  "name": "brunch-app",
+  "description": "Brunch.io application",
+  "private": true,
+  "author": "Brunch",
+  "version": "0.0.1",
+  "repository": "",
+  "scripts": {
+    "start": "brunch watch --server",
+    "build": "brunch build --production"
+  },
+  "dependencies": {
+    "convex-hull": "^1.0.3",
+    "distance-to-line-segment": "^0.2.0",
+    "dotenv": "^4.0.0",
+    "file-saver": "^1.3.3",
+    "mousetrap": "^1.6.1",
+    "point-in-polygon": "^1.0.1",
+    "save-svg-as-png": "^1.3.1",
+    "svg.draggable.js": "^2.2.1",
+    "svg.js": "^2.6.4",
+    "svg.panzoom.js": "^1.2.0"
+  },
+  "devDependencies": {
+    "auto-reload-brunch": "^2",
+    "babel-brunch": "~6.0",
+    "babel-preset-latest": "^6",
+    "brunch": "^2",
+    "clean-css-brunch": "^2",
+    "uglify-js-brunch": "^2"
+  }
+}
